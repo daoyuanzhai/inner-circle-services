@@ -30,6 +30,29 @@ public class DatastoreService {
         return false;
     }
 
+    private boolean uidExists(final String uid) {
+        createCollectionByClass(InnerCircleUser.class);
+
+        final Criteria criteria = Criteria.where(Constants.UID).is(uid);
+        final Query query = new Query(criteria);
+        if (mongoTemplate.exists(query, Constants.COLLECTION_NAME_USER)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean verifyUidAccessToken(final String uid, final String accessToken) {
+        createCollectionByClass(InnerCircleToken.class);
+        final Criteria criteria = Criteria.where(Constants.UID).is(uid)
+                .and(Constants.ACCESS_TOKEN).is(accessToken)
+                .and(Constants.TIMESTAMP).gte(System.currentTimeMillis() - Constants.VALID_PERIOD);
+        final Query query = new Query(criteria);
+
+        final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findOne(
+                query, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
+        return (null != token) ? true : false;
+    }
+
     public String verifyEmailPassword(final String email, final String password) {
         createCollectionByClass(InnerCircleUser.class);
         final Criteria criteria = Criteria.where(Constants.EMAIL).is(email)
@@ -45,7 +68,13 @@ public class DatastoreService {
         if (emailExists(email)) {
             return null;
         }
-        final String uid = UUID.randomUUID().toString();
+        String uid;
+        while (true) {
+            uid = UUID.randomUUID().toString();
+            if (!uidExists(uid)) {
+                break;
+            }
+        }
         final InnerCircleUser user = new InnerCircleUser();
         user.setId(uid);
         user.setEmail(email);
@@ -74,17 +103,23 @@ public class DatastoreService {
 
     public InnerCircleToken updateAccessToken(final String uid, final String refreshToken) {
         createCollectionByClass(InnerCircleToken.class);
+        final String newAccessToken = Utils.tokenGeneratorByUID(uid);
+        final long newTimestamp = System.currentTimeMillis();
+
         final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid)
                 .and(Constants.REFRESH_TOKEN).is(refreshToken);
         final Query query = new Query(criteria);
         final Update update = new Update();
-        update.set(Constants.ACCESS_TOKEN, Utils.tokenGeneratorByUID(uid));
+        update.set(Constants.ACCESS_TOKEN, newAccessToken);
+        update.set(Constants.TIMESTAMP, newTimestamp);
 
         final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findAndModify(
                 query, update, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
         if (null == token) {
             return null;
         }
+        token.setAccessToken(newAccessToken);
+        token.setTimestamp(newTimestamp);
         // avoid sending refreshToken again and again
         token.setRefreshToken(null);
         return token;

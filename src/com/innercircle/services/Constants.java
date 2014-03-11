@@ -13,6 +13,8 @@ public final class Constants {
     public final static String ACCESS_TOKEN = "accessToken";
     public final static String REFRESH_TOKEN = "refreshToken";
     public final static String TIMESTAMP = "timestamp";
+    public final static String RECEIVER_UID = "receiverUid";
+    public final static String MESSAGE = "message";
 
     // Collections
     public final static String COLLECTION_NAME_USER = "users";
@@ -20,4 +22,7 @@ public final class Constants {
 
     // Fields
     public final static String KEY_UID = "_id";
+
+    // Others
+    public final static long VALID_PERIOD = 2*60*60000;
 }

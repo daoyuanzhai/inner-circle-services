@@ -74,11 +74,17 @@
                     });
                     event.preventDefault();
                 });
-                $('#notificationDeleteForm').submit(function(event){
-                    var notificationId = $('#deleteNotificationId').val();
+                $('#sendMessageForm').submit(function(event){
+                    var uid = $('#sendMessageSenderUid').val();
+                    var accessToken = $('#sendMessageSenderAccessToken').val();
+                    var receiverUid = $('#sendMessageReceiverUid').val();
+                    var message = $('#sendMessageMessage').val();
+                    var jsonString = "{\"uid\":\"" + uid + "\",\"accessToken\":\""+ accessToken
+                        + "\",\"receiverUid\":\"" + receiverUid + "\",\"message\":\"" + message + "\"}";
+                    console.log(jsonString);
                     $.ajax({
-                        url: $('#notificationDeleteForm').attr("action"),
-                        data: "notificationId=" + notificationId,
+                        url: $('#sendMessageForm').attr("action"),
+                        data: "jsonString=" + jsonString,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
@@ -98,7 +104,7 @@
                 <li><a href="#tab1">Register</a></li>
                 <li><a href="#tab2">Login</a></li>
                 <li><a href="#tab3">Refresh accessToken</a></li>
-                <li><a href="#tab4">Delete existing notification</a></li>
+                <li><a href="#tab4">Send Message</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -177,12 +183,30 @@
                     </form>
                 </div>
                 <div id="tab4" class="tab">
-                    <form id="notificationDeleteForm" method="POST" action="/NotificationStorageService/delete">
+                    <form id="sendMessageForm" method="POST" action="/ServicesConsole/sendMessage">
                         <table>
                             <tr>
-                                <td>ID of the notification to be deleted:</td>
+                                <td>Sender UID:</td>
                                 <td>
-                                    <input id="deleteNotificationId" />
+                                    <input id="sendMessageSenderUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="sendMessageSenderAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Receiver UID:</td>
+                                <td>
+                                    <input id="sendMessageReceiverUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Message Body:</td>
+                                <td>
+                                    <input id="sendMessageMessage" />
                                 </td>
                             </tr>
                             <tr>

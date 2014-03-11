@@ -1,5 +1,7 @@
 package com.innercircle.services;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 
 import org.json.JSONException;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.innercircle.services.data.DatastoreService;
+import com.innercircle.services.messaging.MessagingManager;
 import com.innercircle.services.model.InnerCircleError;
 import com.innercircle.services.model.InnerCircleToken;
 
@@ -22,9 +25,11 @@ public class ServicesConsoleController {
     // private ModelMap mModel;
     @Autowired
     private DatastoreService datastoreService;
+    private MessagingManager messagingManager;
 
     @PostConstruct
-    public void init() {
+    public void init() throws IOException {
+    	messagingManager = MessagingManager.getInstance();
     }
 
     @RequestMapping(value = "/index", method = RequestMethod.GET)
@@ -114,6 +119,44 @@ public class ServicesConsoleController {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @RequestMapping(value = "/sendMessage", method = RequestMethod.POST)
+    public @ResponseBody Object sendMessage(
+            @RequestParam(Constants.JSON_STRING) String jsonString,
+            ModelMap model) {
+        System.out.println(jsonString);
+        try {
+            final JSONObject registerJsonObject = new JSONObject(jsonString);
+
+            final String uid = registerJsonObject.getString(Constants.UID);
+            final String accessToken = registerJsonObject.getString(Constants.ACCESS_TOKEN);
+            final String receiverUid = registerJsonObject.getString(Constants.RECEIVER_UID);
+            final String message = registerJsonObject.getString(Constants.MESSAGE);
+            System.out.println(Constants.UID + ": " + uid);
+            System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+            System.out.println(Constants.RECEIVER_UID + ": " + receiverUid);
+            System.out.println(Constants.MESSAGE + ": " + message);
+
+            if (datastoreService.verifyUidAccessToken(uid, accessToken)) {
+                System.out.println("verified");
+                messagingManager.sendLog(message);
+                return null;
+            } else {
+                final InnerCircleError error = new InnerCircleError();
+                error.setError("accessToken has expired");
+                return error;
+            }
+        } catch (IOException e) {
+        	final InnerCircleError error = new InnerCircleError();
+            error.setError("error sending message");
+            return error;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            final InnerCircleError error = new InnerCircleError();
+            error.setError("error parsing json parameters");
+            return error;
         }
     }
 }
