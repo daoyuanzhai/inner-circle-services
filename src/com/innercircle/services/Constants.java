@@ -15,6 +15,8 @@ public final class Constants {
     public final static String TIMESTAMP = "timestamp";
     public final static String RECEIVER_UID = "receiverUid";
     public final static String MESSAGE = "message";
+    public final static String IMAGE_USAGE = "imageUsage";
+    public final static String FILE_NAME = "filename";
 
     // Collections
     public final static String COLLECTION_NAME_USER = "users";
@@ -25,4 +27,5 @@ public final class Constants {
 
     // Others
     public final static long VALID_PERIOD = 2*60*60000;
+    public final static String EXCHANGE_NAME = "textMessages";
 }

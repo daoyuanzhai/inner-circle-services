@@ -3,13 +3,18 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:mvc="http://www.springframework.org/schema/mvc"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:mongo="http://www.springframework.org/schema/data/mongo"
     xsi:schemaLocation="
-    http://www.springframework.org/schema/beans     
+    http://www.springframework.org/schema/data/mongo
+    http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+    http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/context 
     http://www.springframework.org/schema/context/spring-context-3.0.xsd
     http://www.springframework.org/schema/mvc
-    http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+    http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+    http://www.springframework.org/schema/data/repository
+    http://www.springframework.org/schema/data/repository/spring-repository-1.5.xsd">
 
     <context:component-scan base-package="com.innercircle.services" />
 
@@ -20,12 +25,29 @@
         <property name="suffix" value=".jsp" />
     </bean>
 
+    <bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+
+    <bean id="fileUpload" class="com.innercircle.services.model.InnerCircleFileUpload"/>
+
     <!-- Factory bean that creates the Mongo instance -->
     <bean id="mongo" class="org.springframework.data.mongodb.core.MongoFactoryBean">
         <property name="host" value="ds033709.mongolab.com" />
         <property name="port" value="33709" />
     </bean>
-     
+
+    <bean id="mongoDbFactory" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
+        <constructor-arg name="mongo" ref="mongo" />
+        <constructor-arg name="databaseName" value="inner_circle" />
+        <constructor-arg type="org.springframework.data.authentication.UserCredentials" ref="userCredentials"/>
+    </bean>
+
+    <mongo:mapping-converter id="converter" />
+    <bean name="gridFsTemplate" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
+        <constructor-arg ref="mongoDbFactory" />
+        <constructor-arg ref="converter" />
+    </bean>
+
     <!-- MongoTemplate for connecting and quering the documents in the database -->
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongo" ref="mongo" />
@@ -34,9 +56,9 @@
     </bean>
  
     <bean id="userCredentials" class="org.springframework.data.authentication.UserCredentials">
-	    <constructor-arg name="username" value="daoyuan" />
-	    <constructor-arg name="password" value="myDEV2013" />
-	</bean>
+        <constructor-arg name="username" value="daoyuan" />
+        <constructor-arg name="password" value="myDEV2013" />
+    </bean>
 
     <!-- Use this post processor to translate any MongoExceptions thrown in @Repository annotated classes -->
     <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />

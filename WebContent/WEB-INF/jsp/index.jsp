@@ -28,12 +28,9 @@
                     var email = $('#email').val();
                     var password = $('#password').val();
                     var VIPCode = $('#VIPCode').val();
-                    var jsonString = "{\"email\":\""+ email + "\",\"password\":\"" + password
-                        + "\",\"VIPCode\":\"" + VIPCode + "\"}";
-                    console.log(jsonString);
                     $.ajax({
                         url: $('#registerForm').attr("action"),
-                        data: "jsonString=" + jsonString,
+                        data: "email=" + email + "&password=" + password + "&VIPCode=" + VIPCode,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
@@ -93,6 +90,24 @@
                     });
                     event.preventDefault();
                 });
+                $('#fileUploadForm').submit(function(event){
+                    var formData = new FormData($(this)[0]);
+                    console.log(formData);
+                    $.ajax({
+                        url: $('#fileUploadForm').attr("action"),
+                        data: formData,
+                        type: "POST",
+                        async: false,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
             });
         </script>
         <title>Web Services</title>
@@ -104,7 +119,9 @@
                 <li><a href="#tab1">Register</a></li>
                 <li><a href="#tab2">Login</a></li>
                 <li><a href="#tab3">Refresh accessToken</a></li>
-                <li><a href="#tab4">Send Message</a></li>
+                <li><a href="#tab4">Send message</a></li>
+                <li><a href="#tab5">Upload files</a></li>
+                <li><a href="#tab6">Download files</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -207,6 +224,67 @@
                                 <td>Message Body:</td>
                                 <td>
                                     <input id="sendMessageMessage" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                 <div id="tab5" class="tab">
+                    <form id="fileUploadForm" modelAttribute="uploadForm" method="POST" action="/ServicesConsole/fileUpload" enctype="multipart/form-data">
+                        <table id="fileTable">
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input name="uid" type="text"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input name="accessToken" type="text"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="file" type="file" /></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Usage:
+                                    <select name="imageUsage">
+                                        <option value="forConversation" selected>For Conversation</option>
+                                        <option value="forPost">For Post</option>
+                                        <option value="forProfile">For Profile</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/><input type="submit" value="Upload" />
+                    </form>
+                 </div>
+                 <div id="tab6" class="tab">
+                    <form id="fileDownloadForm" method="POST" action="/ServicesConsole/fileDownload">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input name="fileDownloadUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input name="fileDownloadAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>File Name:</td>
+                                <td>
+                                    <input name="fileDownloadFilename" />
                                 </td>
                             </tr>
                             <tr>

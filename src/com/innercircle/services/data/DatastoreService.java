@@ -1,5 +1,9 @@
 package com.innercircle.services.data;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,17 +11,45 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.innercircle.services.Constants;
 import com.innercircle.services.Utils;
+import com.innercircle.services.model.InnerCircleResponse;
+import com.innercircle.services.model.InnerCircleTestInner;
+import com.innercircle.services.model.InnerCircleTestOuter;
 import com.innercircle.services.model.InnerCircleToken;
 import com.innercircle.services.model.InnerCircleUser;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.gridfs.GridFSDBFile;
 
 @Repository
 public class DatastoreService {
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private GridFsTemplate gridFsTemplate;
+
+    public void saveFile(MultipartFile file) throws IOException {
+        final InputStream inputStream = file.getInputStream();
+        final String fileName = file.getOriginalFilename();
+
+        DBObject metaData = new BasicDBObject();
+        metaData.put("extra1", "anything 1");
+        metaData.put("extra2", "anything 2");
+
+        gridFsTemplate.store(inputStream, fileName, metaData);
+    }
+
+    public GridFSDBFile readFile(String filename) {
+        final Criteria criteria = Criteria.where(Constants.FILE_NAME).is(filename);
+        final Query query = new Query(criteria);
+        final List<GridFSDBFile> files = gridFsTemplate.find(query);
+        return files.get(0);
+    }
 
     private boolean emailExists(final String email) {
         createCollectionByClass(InnerCircleUser.class);
@@ -41,16 +73,22 @@ public class DatastoreService {
         return false;
     }
 
-    public boolean verifyUidAccessToken(final String uid, final String accessToken) {
+    public InnerCircleResponse.Status verifyUidAccessToken(final String uid, final String accessToken) {
         createCollectionByClass(InnerCircleToken.class);
         final Criteria criteria = Criteria.where(Constants.UID).is(uid)
-                .and(Constants.ACCESS_TOKEN).is(accessToken)
-                .and(Constants.TIMESTAMP).gte(System.currentTimeMillis() - Constants.VALID_PERIOD);
+                .and(Constants.ACCESS_TOKEN).is(accessToken);
+                // .and(Constants.TIMESTAMP).gte(System.currentTimeMillis() - Constants.VALID_PERIOD);
         final Query query = new Query(criteria);
 
         final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findOne(
                 query, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
-        return (null != token) ? true : false;
+        if (null == token) {
+            return InnerCircleResponse.Status.TOKEN_MISMATCH;
+        } else if (token.getTimestamp() < System.currentTimeMillis() - Constants.VALID_PERIOD) {
+            return InnerCircleResponse.Status.TOKEN_EXPIRE_ERROR;
+        } else {
+            return InnerCircleResponse.Status.SUCCESS;
+        }
     }
 
     public String verifyEmailPassword(final String email, final String password) {
@@ -61,7 +99,7 @@ public class DatastoreService {
 
         final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findOne(
                 query, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
-        return user.getId();
+        return (null == user) ? null : user.getId();
     }
 
     public String addUser(final String email, final String password, final String VIPCode) {
@@ -82,6 +120,21 @@ public class DatastoreService {
         user.setVIPCode(VIPCode);
         mongoTemplate.insert(user, Constants.COLLECTION_NAME_USER);
         return uid;
+    }
+
+    public void addTestObject() {
+        final List<InnerCircleTestInner> innerList = new LinkedList<InnerCircleTestInner>();
+        for (int i = 0; i < 10; i++) {
+            InnerCircleTestInner inner = new InnerCircleTestInner();
+            inner.setField3(UUID.randomUUID().toString());
+            inner.setField4(UUID.randomUUID().toString());
+            innerList.add(inner);
+        }
+        final InnerCircleTestOuter outter = new InnerCircleTestOuter();
+        outter.setField1(UUID.randomUUID().toString());
+        outter.setField2(UUID.randomUUID().toString());
+        outter.setInnerList(innerList);
+        mongoTemplate.insert(outter, "test_collection");
     }
 
     public InnerCircleToken addOrUpdateToken(final String uid) {
