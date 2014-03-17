@@ -58,6 +58,9 @@ public class ServicesConsoleController {
             @RequestParam(Constants.VIP_CODE) String VIPCode,
             ModelMap model) {
         resetResponse();
+        email = HtmlUtils.htmlUnescape(email);
+        password = HtmlUtils.htmlUnescape(password);
+        VIPCode = HtmlUtils.htmlUnescape(VIPCode);
 
         System.out.println(Constants.EMAIL + ": " + email);
         System.out.println(Constants.PASSWORD + ": " + password);
@@ -76,30 +79,23 @@ public class ServicesConsoleController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public @ResponseBody Object login(
-            @RequestParam(Constants.JSON_STRING) String jsonString,
+            @RequestParam(Constants.EMAIL) String email,
+            @RequestParam(Constants.PASSWORD) String password,
             ModelMap model) {
-        try {
-            resetResponse();
-            final JSONObject registerJsonObject = new JSONObject(jsonString);
+        resetResponse();
+        email = HtmlUtils.htmlUnescape(email);
+        password = HtmlUtils.htmlUnescape(password);
 
-            final String email = registerJsonObject.getString(Constants.EMAIL);
-            final String password = registerJsonObject.getString(Constants.PASSWORD);
-            System.out.println(Constants.EMAIL + ": " + email);
-            System.out.println(Constants.PASSWORD + ": " + password);
+        System.out.println(Constants.EMAIL + ": " + email);
+        System.out.println(Constants.PASSWORD + ": " + password);
 
-            final String uid = datastoreService.verifyEmailPassword(email, password);
-            if (null != uid) {
-                final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
-                response.setStatus(Status.SUCCESS);
-                response.setData(token);
-            } else {
-                response.setStatus(Status.EMAIL_PASSWORD_MISMATCH);;
-            }
-            datastoreService.addTestObject();
-        } catch (JSONException e) {
-            e.printStackTrace();
-            response.setStatus(Status.JSON_PARSE_ERROR);
-            return response;
+        final String uid = datastoreService.verifyEmailPassword(email, password);
+        if (null != uid) {
+            final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
+            response.setStatus(Status.SUCCESS);
+            response.setData(token);
+        } else {
+            response.setStatus(Status.EMAIL_PASSWORD_MISMATCH);;
         }
         return response;
     }
@@ -194,9 +190,9 @@ public class ServicesConsoleController {
             @RequestParam("fileDownloadAccessToken") String accessToken,
             @RequestParam("fileDownloadFilename") String filename,
             HttpServletResponse response) throws IOException {
-    	final String uidUnescaped = HtmlUtils.htmlUnescape(uid);
-    	final String accessTokenUnescaped = HtmlUtils.htmlUnescape(accessToken);
-    	final String filenameUnescaped = HtmlUtils.htmlUnescape(filename);
+        final String uidUnescaped = HtmlUtils.htmlUnescape(uid);
+        final String accessTokenUnescaped = HtmlUtils.htmlUnescape(accessToken);
+        final String filenameUnescaped = HtmlUtils.htmlUnescape(filename);
         System.out.println(Constants.UID + ": " + uidUnescaped);
         System.out.println(Constants.ACCESS_TOKEN + ": " + accessTokenUnescaped);
         System.out.println(Constants.FILE_NAME + ": " + filenameUnescaped);

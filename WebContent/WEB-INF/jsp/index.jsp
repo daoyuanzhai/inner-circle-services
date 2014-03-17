@@ -42,11 +42,9 @@
                 $('#loginForm').submit(function(event){
                     var email = $('#loginEmail').val();
                     var password = $('#loginPassword').val();
-                    var jsonString = "{\"email\":\"" + email + "\",\"password\":\""+ password + "\"}";
-                    console.log(jsonString);
                     $.ajax({
                         url: $('#loginForm').attr("action"),
-                        data: "jsonString=" + jsonString,
+                        data: "email=" + email + "&password=" + password,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
