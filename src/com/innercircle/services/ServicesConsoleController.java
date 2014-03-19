@@ -6,7 +6,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -102,30 +101,24 @@ public class ServicesConsoleController {
 
     @RequestMapping(value = "/refreshAccessToken", method = RequestMethod.POST)
     public @ResponseBody Object refreshAccessToken(
-            @RequestParam(Constants.JSON_STRING) String jsonString,
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.REFRESH_TOKEN) String refreshToken,
             ModelMap model) {
-        try {
-            resetResponse();
-            final JSONObject registerJsonObject = new JSONObject(jsonString);
+        resetResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        refreshToken = HtmlUtils.htmlUnescape(refreshToken);
 
-            final String uid = registerJsonObject.getString(Constants.UID);
-            final String refreshToken = registerJsonObject.getString(Constants.REFRESH_TOKEN);
-            System.out.println(Constants.UID + ": " + uid);
-            System.out.println(Constants.REFRESH_TOKEN + ": " + refreshToken);
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.REFRESH_TOKEN + ": " + refreshToken);
 
-            final InnerCircleToken token = datastoreService.updateAccessToken(uid, refreshToken);
-            if (null != token) {
-                response.setStatus(Status.SUCCESS);
-                response.setData(token);
-            } else {
-                response.setStatus(Status.TOKEN_MISMATCH);
-            }
-            return response;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            response.setStatus(Status.JSON_PARSE_ERROR);
-            return response;
+        final InnerCircleToken token = datastoreService.updateAccessToken(uid, refreshToken);
+        if (null != token) {
+            response.setStatus(Status.SUCCESS);
+            response.setData(token);
+        } else {
+            response.setStatus(Status.TOKEN_MISMATCH);
         }
+        return response;
     }
 
     @RequestMapping(value = "/sendMessage", method = RequestMethod.POST)
@@ -152,12 +145,9 @@ public class ServicesConsoleController {
                 messagingManager.sendMessage(receiverUid, message);
             }
             return response;
-        } catch (IOException e) {
-            response.setStatus(InnerCircleResponse.Status.SEND_MESSAGE_ERROR);
-            return response;
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(InnerCircleResponse.Status.JSON_PARSE_ERROR);;
+            response.setStatus(InnerCircleResponse.Status.FAILED);;
             return response;
         }
     }
@@ -235,6 +225,7 @@ public class ServicesConsoleController {
                 response.setStatus(InnerCircleResponse.Status.FAILED);
             }
         }
+        System.out.println("setGender response status: " + response.getStatus().toString());
         return response;
     }
 

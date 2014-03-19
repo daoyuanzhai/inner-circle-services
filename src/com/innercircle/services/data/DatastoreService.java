@@ -142,13 +142,20 @@ public class DatastoreService {
 
         final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
         final Query query = new Query(criteria);
-        mongoTemplate.remove(query, Constants.COLLECTION_NAME_TOKEN);
+        InnerCircleToken token = mongoTemplate.findAndRemove(query,InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
 
-        final InnerCircleToken token = new InnerCircleToken();
-        token.setUid(uid);
-        token.setAccessToken(Utils.tokenGeneratorByUID(uid));
-        token.setRefreshToken(Utils.tokenGeneratorByUID(uid));
-        token.setTimestamp(System.currentTimeMillis());
+        final String newAccessToken = Utils.tokenGeneratorByUID(uid);
+        final String newRefreshToken = Utils.tokenGeneratorByUID(uid);
+        final long newTimestamp = System.currentTimeMillis();
+
+        if (null == token) {
+            token = new InnerCircleToken();
+            token.setUid(uid);
+        }
+        token.setAccessToken(newAccessToken);
+        token.setRefreshToken(newRefreshToken);
+        token.setTimestamp(newTimestamp);
+
         mongoTemplate.insert(token, Constants.COLLECTION_NAME_TOKEN);
 
         return token;

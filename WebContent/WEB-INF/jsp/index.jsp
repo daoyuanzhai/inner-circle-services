@@ -56,11 +56,9 @@
                 $('#refreshAccessTokenForm').submit(function(event){
                     var uid = $('#refreshAccessTokenUid').val();
                     var refreshToken = $('#refreshAccessTokenRefreshToken').val();
-                    var jsonString = "{\"uid\":\"" + uid + "\",\"refreshToken\":\""+ refreshToken + "\"}";
-                    console.log(jsonString);
                     $.ajax({
                         url: $('#refreshAccessTokenForm').attr("action"),
-                        data: "jsonString=" + jsonString,
+                        data: "uid=" + uid + "&refreshToken=" + refreshToken,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
