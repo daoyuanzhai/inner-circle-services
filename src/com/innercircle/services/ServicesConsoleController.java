@@ -69,10 +69,10 @@ public class ServicesConsoleController {
         final String uid = datastoreService.addUser(email, password, VIPCode);
         if (null != uid) {
             final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
-            response.setStatus(Status.SUCCESS);
+            response.setStatus(InnerCircleResponse.Status.SUCCESS);
             response.setData(token);
         } else {
-            response.setStatus(Status.EMAIL_EXISTS_ERROR);
+            response.setStatus(InnerCircleResponse.Status.EMAIL_EXISTS_ERROR);
         }
         return response;
     }
@@ -92,10 +92,10 @@ public class ServicesConsoleController {
         final String uid = datastoreService.verifyEmailPassword(email, password);
         if (null != uid) {
             final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
-            response.setStatus(Status.SUCCESS);
+            response.setStatus(InnerCircleResponse.Status.SUCCESS);
             response.setData(token);
         } else {
-            response.setStatus(Status.EMAIL_PASSWORD_MISMATCH);;
+            response.setStatus(InnerCircleResponse.Status.EMAIL_PASSWORD_MISMATCH);;
         }
         return response;
     }
@@ -153,11 +153,11 @@ public class ServicesConsoleController {
             }
             return response;
         } catch (IOException e) {
-            response.setStatus(Status.SEND_MESSAGE_ERROR);
+            response.setStatus(InnerCircleResponse.Status.SEND_MESSAGE_ERROR);
             return response;
         } catch (JSONException e) {
             e.printStackTrace();
-            response.setStatus(Status.JSON_PARSE_ERROR);;
+            response.setStatus(InnerCircleResponse.Status.JSON_PARSE_ERROR);;
             return response;
         }
     }
@@ -209,6 +209,33 @@ public class ServicesConsoleController {
                 throw new RuntimeException("IOError writing file to output stream");
             }
         }
+    }
+
+    @RequestMapping(value = "/setGender", method = RequestMethod.POST)
+    public @ResponseBody Object setGender(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.GENDER) char gender,
+            ModelMap model) {
+        resetResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.GENDER + ": " + gender);
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            final InnerCircleToken token = datastoreService.updateGender(uid, gender);
+            if (null != token) {
+                response.setData(token);
+            } else {
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        return response;
     }
 
     private void resetResponse() {

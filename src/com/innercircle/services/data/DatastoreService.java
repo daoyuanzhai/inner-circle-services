@@ -178,6 +178,26 @@ public class DatastoreService {
         return token;
     }
 
+    public InnerCircleToken updateGender(final String uid, final char gender) {
+        createCollectionByClass(InnerCircleToken.class);
+
+        final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
+        final Query query = new Query(criteria);
+        final Update update = new Update();
+        update.set(Constants.GENDER, gender);
+
+        final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findAndModify(
+                query, update, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
+        if (null == token) {
+            return null;
+        }
+        // token returned is before modification
+        token.setGender(gender);
+        // avoid sending refreshToken again and again
+        token.setRefreshToken(null);
+        return token;
+    }
+
     private void createCollectionByClass(Class<?> runtimeClass) {
         if (!mongoTemplate.collectionExists(runtimeClass)) {
             mongoTemplate.createCollection(runtimeClass);

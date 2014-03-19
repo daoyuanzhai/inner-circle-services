@@ -17,6 +17,7 @@ public final class Constants {
     public final static String MESSAGE = "message";
     public final static String IMAGE_USAGE = "imageUsage";
     public final static String FILE_NAME = "filename";
+    public final static String GENDER = "gender";
 
     // Collections
     public final static String COLLECTION_NAME_USER = "users";

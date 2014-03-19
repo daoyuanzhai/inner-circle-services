@@ -106,6 +106,21 @@
                     });
                     event.preventDefault();
                 });
+                $('#setGenderForm').submit(function(event){
+                    var uid = $('#setGenderUid').val();
+                    var accessToken = $('#setGenderAccessToken').val();
+                    var gender = $('[name="setGenderGender"]').val();
+                    $.ajax({
+                        url: $('#setGenderForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&gender=" + gender,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
             });
         </script>
         <title>Web Services</title>
@@ -120,6 +135,7 @@
                 <li><a href="#tab4">Send message</a></li>
                 <li><a href="#tab5">Upload files</a></li>
                 <li><a href="#tab6">Download files</a></li>
+                <li><a href="#tab7">Set Gender</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -283,6 +299,38 @@
                                 <td>File Name:</td>
                                 <td>
                                     <input name="fileDownloadFilename" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab7" class="tab">
+                    <form id="setGenderForm" method="POST" action="/ServicesConsole/setGender">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="setGenderUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="setGenderAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                Gender:
+                                    <select name="setGenderGender">
+                                        <option value="M" selected>Male</option>
+                                        <option value="F" selected>Female</option>
+                                    </select>
                                 </td>
                             </tr>
                             <tr>

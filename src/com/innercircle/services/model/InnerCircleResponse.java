@@ -7,7 +7,6 @@ public class InnerCircleResponse {
         JSON_PARSE_ERROR,
         EMAIL_EXISTS_ERROR,
         EMAIL_PASSWORD_MISMATCH,
-        REFRESH_ERROR,
         TOKEN_EXPIRE_ERROR,
         TOKEN_MISMATCH,
         SEND_MESSAGE_ERROR
