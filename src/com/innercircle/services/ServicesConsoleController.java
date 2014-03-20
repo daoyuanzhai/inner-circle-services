@@ -26,6 +26,7 @@ import com.innercircle.services.model.InnerCircleFileUpload;
 import com.innercircle.services.model.InnerCircleResponse;
 import com.innercircle.services.model.InnerCircleResponse.Status;
 import com.innercircle.services.model.InnerCircleToken;
+import com.innercircle.services.model.InnerCircleUser;
 import com.mongodb.gridfs.GridFSDBFile;
 
 @Controller
@@ -218,14 +219,69 @@ public class ServicesConsoleController {
         InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         response.setStatus(status);
         if (Status.SUCCESS == status) {
-            final InnerCircleToken token = datastoreService.updateGender(uid, gender);
-            if (null != token) {
-                response.setData(token);
+            final InnerCircleUser user = datastoreService.updateGender(uid, gender);
+            if (null != user) {
+                response.setData(user);
             } else {
                 response.setStatus(InnerCircleResponse.Status.FAILED);
             }
         }
         System.out.println("setGender response status: " + response.getStatus().toString());
+        return response;
+    }
+
+    @RequestMapping(value = "/setUsername", method = RequestMethod.POST)
+    public @ResponseBody Object setUsername(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.USERNAME) String username,
+            ModelMap model) {
+        resetResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.USERNAME + ": " + username);
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            final InnerCircleUser user = datastoreService.updateUsername(uid, username);
+            if (null != user) {
+                response.setData(user);
+            } else {
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("setUsername response status: " + response.getStatus().toString());
+        return response;
+    }
+
+    @RequestMapping(value = "/getUserAccount", method = RequestMethod.POST)
+    public @ResponseBody Object getUserAccount(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            ModelMap model) {
+        resetResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        System.out.println("uid and accessToken verification result: " + status.toString());
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            final InnerCircleUser user = datastoreService.getInnerCircleUser(uid);
+            if (null != user) {
+                response.setData(user);
+            } else {
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("setUsername response status: " + response.getStatus().toString());
         return response;
     }
 

@@ -119,6 +119,35 @@
                     });
                     event.preventDefault();
                 });
+                $('#setUsernameForm').submit(function(event){
+                    var uid = $('#setUsernameUid').val();
+                    var accessToken = $('#setUsernameAccessToken').val();
+                    var username = $('#setUsernameUsername').val();
+                    $.ajax({
+                        url: $('#setUsernameForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&username=" + username,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
+                $('#getUserAccountForm').submit(function(event){
+                    var uid = $('#getUserAccountUid').val();
+                    var accessToken = $('#getUserAccountAccessToken').val();
+                    $.ajax({
+                        url: $('#getUserAccountForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
             });
         </script>
         <title>Web Services</title>
@@ -134,6 +163,8 @@
                 <li><a href="#tab5">Upload files</a></li>
                 <li><a href="#tab6">Download files</a></li>
                 <li><a href="#tab7">Set Gender</a></li>
+                <li><a href="#tab8">Set Username</a></li>
+                <li><a href="#tab9">Account Info</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -329,6 +360,58 @@
                                         <option value="M" selected>Male</option>
                                         <option value="F" selected>Female</option>
                                     </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab8" class="tab">
+                    <form id="setUsernameForm" method="POST" action="/ServicesConsole/setUsername">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="setUsernameUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="setUsernameAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Username:</td>
+                                <td>
+                                    <input id="setUsernameUsername" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab9" class="tab">
+                    <form id="getUserAccountForm" method="POST" action="/ServicesConsole/getUserAccount">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="getUserAccountUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="getUserAccountAccessToken" />
                                 </td>
                             </tr>
                             <tr>

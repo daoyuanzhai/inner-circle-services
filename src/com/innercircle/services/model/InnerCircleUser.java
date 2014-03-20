@@ -10,6 +10,8 @@ public class InnerCircleUser implements InnerCircleData {
     private String email;
     private String password;
     private String VIPCode;
+    private char gender;
+    private String username;
 
     public void setId(String id) {
         this.id = id;
@@ -41,5 +43,21 @@ public class InnerCircleUser implements InnerCircleData {
 
     public String getVIPCode() {
         return this.VIPCode;
+    }
+
+    public void setGender(final char gender) {
+        this.gender = gender;
+    }
+
+    public char getGender() {
+        return this.gender;
+    }
+
+    public void setUsername(final String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return this.username;
     }
 }

@@ -9,7 +9,6 @@ public class InnerCircleToken implements InnerCircleData {
     private String uid;
     private String accessToken;
     private String refreshToken;
-    private char gender;
     private long timestamp;
 
     public void setUid(final String uid) {
@@ -34,14 +33,6 @@ public class InnerCircleToken implements InnerCircleData {
 
     public String getRefreshToken() {
         return this.refreshToken;
-    }
-
-    public void setGender(final char gender) {
-        this.gender = gender;
-    }
-
-    public char getGender() {
-        return this.gender;
     }
 
     public void setTimestamp(final long timestamp) {

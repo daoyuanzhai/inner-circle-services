@@ -185,24 +185,50 @@ public class DatastoreService {
         return token;
     }
 
-    public InnerCircleToken updateGender(final String uid, final char gender) {
-        createCollectionByClass(InnerCircleToken.class);
+    public InnerCircleUser updateGender(final String uid, final char gender) {
+        createCollectionByClass(InnerCircleUser.class);
 
         final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
         final Query query = new Query(criteria);
         final Update update = new Update();
         update.set(Constants.GENDER, gender);
 
-        final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findAndModify(
-                query, update, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
-        if (null == token) {
+        final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findAndModify(
+                query, update, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
+        if (null == user) {
             return null;
         }
-        // token returned is before modification
-        token.setGender(gender);
-        // avoid sending refreshToken again and again
-        token.setRefreshToken(null);
-        return token;
+        // user returned is before modification
+        user.setGender(gender);
+        return user;
+    }
+
+    public InnerCircleUser updateUsername(final String uid, final String username) {
+        createCollectionByClass(InnerCircleUser.class);
+
+        final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
+        final Query query = new Query(criteria);
+        final Update update = new Update();
+        update.set(Constants.USERNAME, username);
+
+        final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findAndModify(
+                query, update, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
+        if (null == user) {
+            return null;
+        }
+        // user returned is before modification
+        user.setUsername(username);
+        return user;
+    }
+
+    public InnerCircleUser getInnerCircleUser(final String uid) {
+        createCollectionByClass(InnerCircleUser.class);
+
+        final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
+        final Query query = new Query(criteria);
+
+        final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findOne(query, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
+        return user;
     }
 
     private void createCollectionByClass(Class<?> runtimeClass) {
