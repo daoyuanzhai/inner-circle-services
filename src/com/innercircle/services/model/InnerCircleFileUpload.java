@@ -6,6 +6,7 @@ public class InnerCircleFileUpload {
 
     private String uid;
     private String accessToken;
+    private String filename;
     private MultipartFile file;
     private String imageUsage;
 
@@ -19,6 +20,14 @@ public class InnerCircleFileUpload {
 
     public String getAccessToken() {
         return this.accessToken;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public String getFilename() {
+        return this.filename;
     }
 
     public void setAccessToken(String accessToken) {

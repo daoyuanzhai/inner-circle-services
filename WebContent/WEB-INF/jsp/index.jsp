@@ -293,15 +293,21 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td>File Name:</td>
+                                <td>
+                                    <input name="filename" type="text"/>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td><input name="file" type="file" /></td>
                             </tr>
                             <tr>
                                 <td>
                                     Usage:
                                     <select name="imageUsage">
-                                        <option value="forConversation" selected>For Conversation</option>
-                                        <option value="forPost">For Post</option>
-                                        <option value="forProfile">For Profile</option>
+                                        <option value="forTalks" selected>For Talks</option>
+                                        <option value="forNews">For News</option>
+                                        <option value="forSettings">For Settings</option>
                                     </select>
                                 </td>
                             </tr>

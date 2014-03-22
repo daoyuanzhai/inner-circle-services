@@ -156,24 +156,32 @@ public class ServicesConsoleController {
     @RequestMapping(value = "/fileUpload", method = RequestMethod.POST)
     public @ResponseBody Object fileUpload(@ModelAttribute("uploadForm") InnerCircleFileUpload uploadForm, Model map) {
         resetResponse();
-        System.out.println(Constants.UID + ": " + uploadForm.getUid());
-        System.out.println(Constants.ACCESS_TOKEN + ": " + uploadForm.getAccessToken());
-        System.out.println(Constants.IMAGE_USAGE + ": " + uploadForm.getImageUsage());
+        final String uid = HtmlUtils.htmlUnescape(uploadForm.getUid());
+        final String accessToken = HtmlUtils.htmlUnescape(uploadForm.getAccessToken());
+        final String imageUsage = HtmlUtils.htmlUnescape(uploadForm.getImageUsage());
+        final String filename = HtmlUtils.htmlUnescape(uploadForm.getFilename());
 
-        MultipartFile file = uploadForm.getFile();
-        try {
-            datastoreService.saveFile(file);
-            String fileName = file.getOriginalFilename();
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.IMAGE_USAGE + ": " + imageUsage);
+        System.out.println(Constants.FILE_NAME + ": " + filename);
 
-            map.addAttribute("file", fileName);
-            response.setStatus(Status.SUCCESS);
-            return response;
-        } catch (IOException e) {
-            e.printStackTrace();
-            map.addAttribute("file", e.toString());
-            response.setStatus(Status.FAILED);
-            return response;
+        final InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        response.setStatus(status);
+        if (status == InnerCircleResponse.Status.SUCCESS) {
+            MultipartFile file = uploadForm.getFile();
+            try {
+                datastoreService.saveFile(file, filename, imageUsage);
+                response.setStatus(Status.SUCCESS);
+                return response;
+            } catch (IOException e) {
+                e.printStackTrace();
+                response.setStatus(Status.FAILED);
+                return response;
+            }
         }
+        System.out.println("fileUpload response status: " + response.getStatus().toString());
+        return response;
     }
 
     @RequestMapping(value = "/fileDownload", method = RequestMethod.POST)
@@ -193,7 +201,7 @@ public class ServicesConsoleController {
             try {
                 response.setContentType(file.getContentType());
                 response.setContentLength((new Long(file.getLength()).intValue()));
-                response.setHeader("content-Disposition", "attachment; filename=" + file.getFilename());// "attachment;filename=test.xls"
+                response.setHeader("content-Disposition", "attachment; filename=" + file.getFilename());
                 // copy it to response's OutputStream
                 IOUtils.copyLarge(file.getInputStream(), response.getOutputStream());
             } catch (IOException ex) {

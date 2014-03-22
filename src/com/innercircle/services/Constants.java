@@ -15,8 +15,14 @@ public final class Constants {
     public final static String TIMESTAMP = "timestamp";
     public final static String RECEIVER_UID = "receiverUid";
     public final static String MESSAGE = "message";
+
     public final static String IMAGE_USAGE = "imageUsage";
+    public final static String IMAGE_USAGE_FOR_TALKS = "forTalks";
+    public final static String IMAGE_USAGE_FOR_NEWS = "forNews";
+    public final static String IMAGE_USAGE_FOR_SETTINGS = "forSettings";
+
     public final static String FILE_NAME = "filename";
+    public final static String ORIGINAL_FILE_NAME = "originalFilename";
     public final static String GENDER = "gender";
     public final static String USERNAME = "username";
 

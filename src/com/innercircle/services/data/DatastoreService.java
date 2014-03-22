@@ -33,21 +33,26 @@ public class DatastoreService {
     @Autowired
     private GridFsTemplate gridFsTemplate;
 
-    public void saveFile(MultipartFile file) throws IOException {
+    public void saveFile(final MultipartFile file, final String filename, final String imageUsage) throws IOException {
         final InputStream inputStream = file.getInputStream();
-        final String fileName = file.getOriginalFilename();
 
         DBObject metaData = new BasicDBObject();
-        metaData.put("extra1", "anything 1");
-        metaData.put("extra2", "anything 2");
+        metaData.put(Constants.ORIGINAL_FILE_NAME, file.getOriginalFilename());
+        metaData.put(Constants.IMAGE_USAGE, imageUsage);
 
-        gridFsTemplate.store(inputStream, fileName, metaData);
+        final Criteria criteria = Criteria.where(Constants.FILE_NAME).is(filename);
+        final Query query = new Query(criteria);
+        gridFsTemplate.delete(query);
+        gridFsTemplate.store(inputStream, filename, metaData);
     }
 
     public GridFSDBFile readFile(String filename) {
         final Criteria criteria = Criteria.where(Constants.FILE_NAME).is(filename);
         final Query query = new Query(criteria);
         final List<GridFSDBFile> files = gridFsTemplate.find(query);
+        if (files.size() < 0) {
+            return null;
+        }
         return files.get(0);
     }
 
@@ -99,7 +104,7 @@ public class DatastoreService {
 
         final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findOne(
                 query, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
-        return (null == user) ? null : user.getId();
+        return (null == user) ? null : user.getUid();
     }
 
     public String addUser(final String email, final String password, final String VIPCode) {
@@ -114,7 +119,7 @@ public class DatastoreService {
             }
         }
         final InnerCircleUser user = new InnerCircleUser();
-        user.setId(uid);
+        user.setUid(uid);
         user.setEmail(email);
         user.setPassword(password);
         user.setVIPCode(VIPCode);

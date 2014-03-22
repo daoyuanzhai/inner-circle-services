@@ -6,19 +6,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class InnerCircleUser implements InnerCircleData {
     @Id
-    private String id;
+    private String uid;
     private String email;
     private String password;
     private String VIPCode;
     private char gender;
     private String username;
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUid(String uId) {
+        this.uid = uId;
     }
 
-    public String getId() {
-        return id;
+    public String getUid() {
+        return uid;
     }
 
     public void setEmail(String email) {
