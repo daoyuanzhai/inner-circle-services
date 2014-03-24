@@ -10,8 +10,6 @@ import com.rabbitmq.client.ConnectionFactory;
 public class MessagingManager {
 
     private ConnectionFactory factory;
-    private Connection connection;
-    private Channel channel;
 
     public MessagingManager() {
         factory = new ConnectionFactory();
@@ -19,8 +17,8 @@ public class MessagingManager {
     }
 
     public void sendMessage(final String uid, final String message) throws IOException {
-        connection = factory.newConnection();
-        channel = connection.createChannel();
+        final Connection connection = factory.newConnection();
+        final Channel channel = connection.createChannel();
 
         channel.exchangeDeclare(Constants.EXCHANGE_NAME, "direct");
 

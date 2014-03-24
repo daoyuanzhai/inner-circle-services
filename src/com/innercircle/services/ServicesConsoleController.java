@@ -35,7 +35,6 @@ public class ServicesConsoleController {
     @Autowired
     private DatastoreService datastoreService;
     private MessagingManager messagingManager;
-    private InnerCircleResponse response;
 
     @Autowired
     private InnerCircleFileUpload fileUpload;
@@ -43,7 +42,6 @@ public class ServicesConsoleController {
     @PostConstruct
     public void init() throws IOException {
         messagingManager = new MessagingManager();
-        response = new InnerCircleResponse();
     }
 
     @RequestMapping(value = "/index", method = RequestMethod.GET)
@@ -57,7 +55,8 @@ public class ServicesConsoleController {
             @RequestParam(Constants.PASSWORD) String password,
             @RequestParam(Constants.VIP_CODE) String VIPCode,
             ModelMap model) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
+
         email = HtmlUtils.htmlUnescape(email);
         password = HtmlUtils.htmlUnescape(password);
         VIPCode = HtmlUtils.htmlUnescape(VIPCode);
@@ -82,7 +81,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.EMAIL) String email,
             @RequestParam(Constants.PASSWORD) String password,
             ModelMap model) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
         email = HtmlUtils.htmlUnescape(email);
         password = HtmlUtils.htmlUnescape(password);
 
@@ -105,7 +104,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.UID) String uid,
             @RequestParam(Constants.REFRESH_TOKEN) String refreshToken,
             ModelMap model) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         refreshToken = HtmlUtils.htmlUnescape(refreshToken);
 
@@ -126,9 +125,9 @@ public class ServicesConsoleController {
     public @ResponseBody Object sendMessage(
             @RequestParam(Constants.JSON_STRING) String jsonString,
             ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
         System.out.println(jsonString);
         try {
-            resetResponse();
             final JSONObject registerJsonObject = new JSONObject(jsonString);
 
             final String uid = registerJsonObject.getString(Constants.UID);
@@ -155,7 +154,7 @@ public class ServicesConsoleController {
 
     @RequestMapping(value = "/fileUpload", method = RequestMethod.POST)
     public @ResponseBody Object fileUpload(@ModelAttribute("uploadForm") InnerCircleFileUpload uploadForm, Model map) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
         final String uid = HtmlUtils.htmlUnescape(uploadForm.getUid());
         final String accessToken = HtmlUtils.htmlUnescape(uploadForm.getAccessToken());
         final String imageUsage = HtmlUtils.htmlUnescape(uploadForm.getImageUsage());
@@ -216,7 +215,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
             @RequestParam(Constants.GENDER) char gender,
             ModelMap model) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -244,7 +243,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
             @RequestParam(Constants.USERNAME) String username,
             ModelMap model) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -271,7 +270,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.UID) String uid,
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
             ModelMap model) {
-        resetResponse();
+        final InnerCircleResponse response = new InnerCircleResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -291,10 +290,5 @@ public class ServicesConsoleController {
         }
         System.out.println("setUsername response status: " + response.getStatus().toString());
         return response;
-    }
-
-    private void resetResponse() {
-        response.setData(null);
-        response.setStatus(null);
     }
 }
