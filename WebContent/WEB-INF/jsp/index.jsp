@@ -137,9 +137,74 @@
                 $('#getUserAccountForm').submit(function(event){
                     var uid = $('#getUserAccountUid').val();
                     var accessToken = $('#getUserAccountAccessToken').val();
+                    var otherUids = $('#getUserAccountOtherUids').val();
                     $.ajax({
                         url: $('#getUserAccountForm').attr("action"),
-                        data: "uid=" + uid + "&accessToken=" + accessToken,
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&otherUids=" + otherUids,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
+                $('#setFollowingForm').submit(function(event){
+                    var uid = $('#setFollowingUid').val();
+                    var accessToken = $('#setFollowingAccessToken').val();
+                    var theOtherUid = $('#setFollowingTheOtherUid').val();
+                    var isFollowing = $('[name="setFollowingIsFollowing"]').val();
+                    $.ajax({
+                        url: $('#setFollowingForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&theOtherUid=" + theOtherUid + "&isFollowing=" + isFollowing,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
+                $('#setIsBlockedForm').submit(function(event){
+                    var uid = $('#setIsBlockedUid').val();
+                    var accessToken = $('#setIsBlockedAccessToken').val();
+                    var theOtherUid = $('#setIsBlockedTheOtherUid').val();
+                    var isBlocked = $('[name="setIsBlockedIsBlocked"]').val();
+                    $.ajax({
+                        url: $('#setIsBlockedForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&theOtherUid=" + theOtherUid + "&isBlocked=" + isBlocked,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
+                $('#getFollowedForm').submit(function(event){
+                    var uid = $('#getFollowedUid').val();
+                    var accessToken = $('#getFollowedAccessToken').val();
+                    var skip = $('#getFollowedSkip').val();
+                    var limit = $('#getFollowedLimit').val();
+                    $.ajax({
+                        url: $('#getFollowedForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&skip=" + skip + "&limit=" + limit,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
+                $('#getBlockedForm').submit(function(event){
+                    var uid = $('#getBlockedUid').val();
+                    var accessToken = $('#getBlockedAccessToken').val();
+                    var skip = $('#getBlockedSkip').val();
+                    var limit = $('#getBlockedLimit').val();
+                    $.ajax({
+                        url: $('#getBlockedForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&skip=" + skip + "&limit=" + limit,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
@@ -164,7 +229,11 @@
                 <li><a href="#tab6">Download files</a></li>
                 <li><a href="#tab7">Set Gender</a></li>
                 <li><a href="#tab8">Set Username</a></li>
-                <li><a href="#tab9">Account Info</a></li>
+                <li><a href="#tab9">Account(s) Info</a></li>
+                <li><a href="#tab10">Set Following</a></li>
+                <li><a href="#tab11">Set IsBlocked</a></li>
+                <li><a href="#tab12">Get Followed</a></li>
+                <li><a href="#tab13">Get Blocked</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -406,7 +475,7 @@
                     </form>
                 </div>
                 <div id="tab9" class="tab">
-                    <form id="getUserAccountForm" method="POST" action="/ServicesConsole/getUserAccount">
+                    <form id="getUserAccountForm" method="POST" action="/ServicesConsole/getUserAccounts">
                         <table>
                             <tr>
                                 <td>UID:</td>
@@ -418,6 +487,158 @@
                                 <td>Access Token:</td>
                                 <td>
                                     <input id="getUserAccountAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Other UIDs:</td>
+                                <td>
+                                    <input id="getUserAccountOtherUids" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab10" class="tab">
+                    <form id="setFollowingForm" method="POST" action="/ServicesConsole/setFollowing">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="setFollowingUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="setFollowingAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>The Other UID:</td>
+                                <td>
+                                    <input id="setFollowingTheOtherUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                Following Status:
+                                    <select name="setFollowingIsFollowing">
+                                        <option value="false" selected>false</option>
+                                        <option value="true" selected>true</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab11" class="tab">
+                    <form id="setIsBlockedForm" method="POST" action="/ServicesConsole/setIsBlocked">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="setIsBlockedUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="setIsBlockedAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>The Other UID:</td>
+                                <td>
+                                    <input id="setIsBlockedTheOtherUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                Following Status:
+                                    <select name="setIsBlockedIsBlocked">
+                                        <option value="false" selected>false</option>
+                                        <option value="true" selected>true</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab12" class="tab">
+                    <form id="getFollowedForm" method="POST" action="/ServicesConsole/getFollowed">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="getFollowedUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="getFollowedAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Skip Record(s):</td>
+                                <td>
+                                    <input id="getFollowedSkip" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Limit Record(s):</td>
+                                <td>
+                                    <input id="getFollowedLimit" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab13" class="tab">
+                    <form id="getBlockedForm" method="POST" action="/ServicesConsole/getBlocked">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="getBlockedUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="getBlockedAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Skip Record(s):</td>
+                                <td>
+                                    <input id="getBlockedSkip" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Limit Record(s):</td>
+                                <td>
+                                    <input id="getBlockedLimit" />
                                 </td>
                             </tr>
                             <tr>

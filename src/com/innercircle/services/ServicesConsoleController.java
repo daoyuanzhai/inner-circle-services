@@ -1,11 +1,15 @@
 package com.innercircle.services;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,10 +27,12 @@ import org.springframework.web.util.HtmlUtils;
 import com.innercircle.services.data.DatastoreService;
 import com.innercircle.services.messaging.MessagingManager;
 import com.innercircle.services.model.InnerCircleFileUpload;
+import com.innercircle.services.model.InnerCircleRelationList;
 import com.innercircle.services.model.InnerCircleResponse;
 import com.innercircle.services.model.InnerCircleResponse.Status;
 import com.innercircle.services.model.InnerCircleToken;
 import com.innercircle.services.model.InnerCircleUser;
+import com.innercircle.services.model.InnerCircleUserList;
 import com.mongodb.gridfs.GridFSDBFile;
 
 @Controller
@@ -265,10 +271,89 @@ public class ServicesConsoleController {
         return response;
     }
 
-    @RequestMapping(value = "/getUserAccount", method = RequestMethod.POST)
-    public @ResponseBody Object getUserAccount(
+    @RequestMapping(value = "/getUserAccounts", method = RequestMethod.POST)
+    public @ResponseBody Object getUserAccounts(
             @RequestParam(Constants.UID) String uid,
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.OTHER_UIDS) String otherUids,
+            ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+        otherUids = HtmlUtils.htmlUnescape(otherUids);
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.OTHER_UIDS + ": " + otherUids);
+
+        final List<String> uidList = new LinkedList<String>();
+        try{
+            final JSONArray uidArray = new JSONArray(otherUids);
+
+            for (int i = 0; i < uidArray.length(); i++) {
+                uidList.add(uidArray.getString(i));
+            }
+        } catch (JSONException e) {
+            response.setStatus(InnerCircleResponse.Status.FAILED);
+            return response;
+        }
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        System.out.println("uid and accessToken verification result: " + status.toString());
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            final List<InnerCircleUser> users = datastoreService.getInnerCircleUsers(uidList);
+            if (null != users) {
+                final InnerCircleUserList userList = new InnerCircleUserList();
+                userList.setUid(uid);
+                userList.setUserList(users);
+                response.setData(userList);
+            } else {
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("setUsername response status: " + response.getStatus().toString());
+        return response;
+    }
+
+    @RequestMapping(value = "/setFollowing", method = RequestMethod.POST)
+    public @ResponseBody Object setFollowing(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.THE_OTHER_UID) String theOtherUid,
+            @RequestParam(Constants.IS_FOLLOWING) String isFollowingString,
+            ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+        theOtherUid = HtmlUtils.htmlUnescape(theOtherUid);
+        final boolean isFollowing = Boolean.parseBoolean(HtmlUtils.htmlUnescape(isFollowingString));
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.THE_OTHER_UID + ": " + theOtherUid);
+        System.out.println(Constants.IS_FOLLOWING + ": " + String.valueOf(isFollowing));
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        System.out.println("uid and accessToken verification result: " + status.toString());
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            try {
+                datastoreService.setFollowingRelation(uid, theOtherUid, isFollowing);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("setFollowing response status: " + response.getStatus().toString());
+        return response;
+    }
+
+    @RequestMapping(value = "/getFollowed", method = RequestMethod.POST)
+    public @ResponseBody Object getFollowed(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.SKIP) int skip,
+            @RequestParam(Constants.LIMIT) int limit,
             ModelMap model) {
         final InnerCircleResponse response = new InnerCircleResponse();
         uid = HtmlUtils.htmlUnescape(uid);
@@ -276,19 +361,87 @@ public class ServicesConsoleController {
 
         System.out.println(Constants.UID + ": " + uid);
         System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.SKIP + ": " + String.valueOf(skip));
+        System.out.println(Constants.LIMIT + ": " + String.valueOf(limit));
 
         InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         System.out.println("uid and accessToken verification result: " + status.toString());
         response.setStatus(status);
         if (Status.SUCCESS == status) {
-            final InnerCircleUser user = datastoreService.getInnerCircleUser(uid);
-            if (null != user) {
-                response.setData(user);
-            } else {
+            try {
+                final InnerCircleRelationList followedList = datastoreService.getFollowedByUID(uid, skip, limit);
+                response.setData(followedList);
+            } catch (Exception e) {
+                System.out.println(e.toString());
                 response.setStatus(InnerCircleResponse.Status.FAILED);
             }
         }
-        System.out.println("setUsername response status: " + response.getStatus().toString());
+        System.out.println("getFollowed response status: " + response.getStatus().toString());
+        return response;
+    }
+
+    @RequestMapping(value = "/setIsBlocked", method = RequestMethod.POST)
+    public @ResponseBody Object setIsBlocked(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.THE_OTHER_UID) String theOtherUid,
+            @RequestParam(Constants.IS_BLOCKED) String isBlockedString,
+            ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+        theOtherUid = HtmlUtils.htmlUnescape(theOtherUid);
+        final boolean isBlocked = Boolean.parseBoolean(HtmlUtils.htmlUnescape(isBlockedString));
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.THE_OTHER_UID + ": " + theOtherUid);
+        System.out.println(Constants.IS_FOLLOWING + ": " + String.valueOf(isBlocked));
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        System.out.println("uid and accessToken verification result: " + status.toString());
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            try {
+                datastoreService.setIsBlockedRelation(uid, theOtherUid, isBlocked);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("setIsBlocked response status: " + response.getStatus().toString());
+        return response;
+    }
+
+    @RequestMapping(value = "/getBlocked", method = RequestMethod.POST)
+    public @ResponseBody Object getBlocked(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.SKIP) int skip,
+            @RequestParam(Constants.LIMIT) int limit,
+            ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.SKIP + ": " + String.valueOf(skip));
+        System.out.println(Constants.LIMIT + ": " + String.valueOf(limit));
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        System.out.println("uid and accessToken verification result: " + status.toString());
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            try {
+                final InnerCircleRelationList blockedList = datastoreService.getBlockedByUID(uid, skip, limit);
+                response.setData(blockedList);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("getFollowed response status: " + response.getStatus().toString());
         return response;
     }
 }

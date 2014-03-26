@@ -9,7 +9,7 @@ public class InnerCircleUser implements InnerCircleData {
     private String uid;
     private String email;
     private String password;
-    private String VIPCode;
+    private String vipCode;
     private char gender;
     private String username;
 
@@ -37,12 +37,12 @@ public class InnerCircleUser implements InnerCircleData {
         return this.password;
     }
 
-    public void setVIPCode(String VIPCode) {
-        this.VIPCode = VIPCode;
+    public void setVipCode(String vipCode) {
+        this.vipCode = vipCode;
     }
 
-    public String getVIPCode() {
-        return this.VIPCode;
+    public String getVipCode() {
+        return this.vipCode;
     }
 
     public void setGender(final char gender) {

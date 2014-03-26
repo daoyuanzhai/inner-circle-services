@@ -17,9 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.innercircle.services.Constants;
 import com.innercircle.services.Utils;
+import com.innercircle.services.model.InnerCircleRelation;
+import com.innercircle.services.model.InnerCircleRelationList;
 import com.innercircle.services.model.InnerCircleResponse;
-import com.innercircle.services.model.InnerCircleTestInner;
-import com.innercircle.services.model.InnerCircleTestOuter;
 import com.innercircle.services.model.InnerCircleToken;
 import com.innercircle.services.model.InnerCircleUser;
 import com.mongodb.BasicDBObject;
@@ -61,7 +61,7 @@ public class DatastoreService {
 
         final Criteria criteria = Criteria.where(Constants.EMAIL).is(email);
         final Query query = new Query(criteria);
-        if (mongoTemplate.exists(query, Constants.COLLECTION_NAME_USER)) {
+        if (mongoTemplate.exists(query, Constants.COLLECTION_NAME_USERS)) {
             return true;
         }
         return false;
@@ -72,7 +72,7 @@ public class DatastoreService {
 
         final Criteria criteria = Criteria.where(Constants.UID).is(uid);
         final Query query = new Query(criteria);
-        if (mongoTemplate.exists(query, Constants.COLLECTION_NAME_USER)) {
+        if (mongoTemplate.exists(query, Constants.COLLECTION_NAME_USERS)) {
             return true;
         }
         return false;
@@ -86,7 +86,7 @@ public class DatastoreService {
         final Query query = new Query(criteria);
 
         final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findOne(
-                query, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
+                query, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKENS);
         if (null == token) {
             return InnerCircleResponse.Status.TOKEN_MISMATCH;
         } else if (token.getTimestamp() < System.currentTimeMillis() - Constants.VALID_PERIOD) {
@@ -103,11 +103,11 @@ public class DatastoreService {
         final Query query = new Query(criteria);
 
         final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findOne(
-                query, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
+                query, InnerCircleUser.class, Constants.COLLECTION_NAME_USERS);
         return (null == user) ? null : user.getUid();
     }
 
-    public String addUser(final String email, final String password, final String VIPCode) {
+    public String addUser(final String email, final String password, final String vipCode) {
         if (emailExists(email)) {
             return null;
         }
@@ -122,24 +122,100 @@ public class DatastoreService {
         user.setUid(uid);
         user.setEmail(email);
         user.setPassword(password);
-        user.setVIPCode(VIPCode);
-        mongoTemplate.insert(user, Constants.COLLECTION_NAME_USER);
+        user.setVipCode(vipCode);
+        mongoTemplate.insert(user, Constants.COLLECTION_NAME_USERS);
         return uid;
     }
 
-    public void addTestObject() {
-        final List<InnerCircleTestInner> innerList = new LinkedList<InnerCircleTestInner>();
-        for (int i = 0; i < 10; i++) {
-            InnerCircleTestInner inner = new InnerCircleTestInner();
-            inner.setField3(UUID.randomUUID().toString());
-            inner.setField4(UUID.randomUUID().toString());
-            innerList.add(inner);
+    public void setFollowingRelation(final String uid, final String theOtherUid, final boolean isFollowing) {
+        createCollectionByClass(InnerCircleRelation.class);
+
+        final Criteria criteria = Criteria.where(Constants.UID).is(uid).and(Constants.THE_OTHER_UID).is(theOtherUid);
+        final Query query = new Query(criteria);
+
+        final Update update = new Update();
+        update.set(Constants.UID, uid);
+        update.set(Constants.THE_OTHER_UID, theOtherUid);
+        update.set(Constants.IS_FOLLOWING, isFollowing);
+
+        mongoTemplate.upsert(query, update, InnerCircleRelation.class, Constants.COLLECTION_NAME_RELATIONS);
+
+        // remove useless relations
+        removeUselessRelationsByUID(uid);
+        removeUselessRelationsByUID(theOtherUid);
+    }
+
+    public void setIsBlockedRelation(final String uid, final String theOtherUid, final boolean isBlocked) {
+        createCollectionByClass(InnerCircleRelation.class);
+
+        final Criteria criteria = Criteria.where(Constants.UID).is(uid).and(Constants.THE_OTHER_UID).is(theOtherUid);
+        final Query query = new Query(criteria);
+
+        final Update update = new Update();
+        update.set(Constants.UID, uid);
+        update.set(Constants.THE_OTHER_UID, theOtherUid);
+        update.set(Constants.IS_BLOCKED, isBlocked);
+
+        mongoTemplate.upsert(query, update, InnerCircleRelation.class, Constants.COLLECTION_NAME_RELATIONS);
+
+        // remove useless relations
+        removeUselessRelationsByUID(uid);
+        removeUselessRelationsByUID(theOtherUid);
+    }
+
+    public InnerCircleRelationList getFollowedByUID(final String uid, final int skip, final int limit) {
+        createCollectionByClass(InnerCircleRelation.class);
+
+        final Criteria criteria = Criteria.where(Constants.UID).is(uid)
+                .and(Constants.IS_FOLLOWING).is(true);
+        final Query query = new Query(criteria);
+        query.skip(skip);
+        query.limit(limit);
+
+        final List<InnerCircleRelation> relationsList =
+                (List<InnerCircleRelation>) mongoTemplate.find(query, InnerCircleRelation.class, Constants.COLLECTION_NAME_RELATIONS);
+
+        final List<String> followedList = new LinkedList<String>();
+        for (InnerCircleRelation relation : relationsList) {
+            System.out.println(relation.toString());
+            if (!relation.getIsBlocked()) {
+                followedList.add(relation.getTheOtherUid());
+            }
         }
-        final InnerCircleTestOuter outter = new InnerCircleTestOuter();
-        outter.setField1(UUID.randomUUID().toString());
-        outter.setField2(UUID.randomUUID().toString());
-        outter.setInnerList(innerList);
-        mongoTemplate.insert(outter, "test_collection");
+
+        final InnerCircleRelationList relationList = new InnerCircleRelationList();
+        relationList.setRelationList(followedList);
+        relationList.setUid(uid);
+
+        return relationList;
+    }
+
+    public InnerCircleRelationList getBlockedByUID(final String theOtherUid, final int skip, final int limit) {
+        createCollectionByClass(InnerCircleRelation.class);
+
+        final Criteria criteria = Criteria.where(Constants.THE_OTHER_UID).is(theOtherUid)
+                .and(Constants.IS_BLOCKED).is(true);
+        final Query query = new Query(criteria);
+        query.skip(skip);
+        query.limit(limit);
+
+        final List<InnerCircleRelation> relationsList =
+                (List<InnerCircleRelation>) mongoTemplate.find(query, InnerCircleRelation.class, Constants.COLLECTION_NAME_RELATIONS);
+
+        final List<String> blockedList = new LinkedList<String>();
+        for (InnerCircleRelation relation : relationsList) {
+            System.out.println(relation.toString());
+            blockedList.add(relation.getUid());
+        }
+
+        final InnerCircleRelationList relationList = new InnerCircleRelationList();
+        relationList.setRelationList(blockedList);
+        relationList.setUid(theOtherUid);
+
+        // remove useless relations
+        removeUselessRelationsByUID(theOtherUid);
+
+        return relationList;
     }
 
     public InnerCircleToken addOrUpdateToken(final String uid) {
@@ -147,7 +223,7 @@ public class DatastoreService {
 
         final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
         final Query query = new Query(criteria);
-        InnerCircleToken token = mongoTemplate.findAndRemove(query,InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
+        InnerCircleToken token = mongoTemplate.findAndRemove(query,InnerCircleToken.class, Constants.COLLECTION_NAME_TOKENS);
 
         final String newAccessToken = Utils.tokenGeneratorByUID(uid);
         final String newRefreshToken = Utils.tokenGeneratorByUID(uid);
@@ -161,7 +237,7 @@ public class DatastoreService {
         token.setRefreshToken(newRefreshToken);
         token.setTimestamp(newTimestamp);
 
-        mongoTemplate.insert(token, Constants.COLLECTION_NAME_TOKEN);
+        mongoTemplate.insert(token, Constants.COLLECTION_NAME_TOKENS);
 
         return token;
     }
@@ -179,7 +255,7 @@ public class DatastoreService {
         update.set(Constants.TIMESTAMP, newTimestamp);
 
         final InnerCircleToken token = (InnerCircleToken) mongoTemplate.findAndModify(
-                query, update, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKEN);
+                query, update, InnerCircleToken.class, Constants.COLLECTION_NAME_TOKENS);
         if (null == token) {
             return null;
         }
@@ -199,7 +275,7 @@ public class DatastoreService {
         update.set(Constants.GENDER, gender);
 
         final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findAndModify(
-                query, update, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
+                query, update, InnerCircleUser.class, Constants.COLLECTION_NAME_USERS);
         if (null == user) {
             return null;
         }
@@ -217,7 +293,7 @@ public class DatastoreService {
         update.set(Constants.USERNAME, username);
 
         final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findAndModify(
-                query, update, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
+                query, update, InnerCircleUser.class, Constants.COLLECTION_NAME_USERS);
         if (null == user) {
             return null;
         }
@@ -226,14 +302,36 @@ public class DatastoreService {
         return user;
     }
 
-    public InnerCircleUser getInnerCircleUser(final String uid) {
+    public List<InnerCircleUser> getInnerCircleUsers(final List<String> uidList) {
         createCollectionByClass(InnerCircleUser.class);
 
-        final Criteria criteria = Criteria.where(Constants.KEY_UID).is(uid);
+        final Criteria criteria = Criteria.where(Constants.KEY_UID).in(uidList);
         final Query query = new Query(criteria);
 
-        final InnerCircleUser user = (InnerCircleUser) mongoTemplate.findOne(query, InnerCircleUser.class, Constants.COLLECTION_NAME_USER);
-        return user;
+        final List<InnerCircleUser> users = (List<InnerCircleUser>) mongoTemplate.find(query, InnerCircleUser.class, Constants.COLLECTION_NAME_USERS);
+        return users;
+    }
+
+    private void removeUselessRelationsByUID(final String uid) {
+        final Criteria criteriaUid = Criteria.where(Constants.UID).is(uid);
+        final Criteria criteriaTheOtherUid = Criteria.where(Constants.THE_OTHER_UID).is(uid);
+
+        final Criteria criteriaBothFalse = Criteria.where(Constants.IS_FOLLOWING).is(false).and(Constants.IS_BLOCKED).is(false);
+        final Criteria criteriaBlockedNonexists = Criteria.where(Constants.IS_FOLLOWING).is(false)
+                .and(Constants.IS_BLOCKED).nin(true, false);
+        final Criteria criteriaFollowingNonexists = Criteria.where(Constants.IS_BLOCKED).is(false)
+                .and(Constants.IS_FOLLOWING).nin(true, false);
+
+        final Criteria criteriaUser = new Criteria();
+        criteriaUser.orOperator(criteriaUid, criteriaTheOtherUid);
+
+        final Criteria criteriaCond = new Criteria();
+        criteriaCond.orOperator(criteriaBothFalse, criteriaBlockedNonexists, criteriaFollowingNonexists);
+
+        final Criteria criteria = new Criteria();
+        criteria.andOperator(criteriaUser, criteriaCond);
+        final Query query = new Query(criteria);
+        mongoTemplate.remove(query, InnerCircleRelation.class, Constants.COLLECTION_NAME_RELATIONS);
     }
 
     private void createCollectionByClass(Class<?> runtimeClass) {
