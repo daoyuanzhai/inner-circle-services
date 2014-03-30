@@ -96,10 +96,12 @@ public class ServicesConsoleController {
 
         final String uid = datastoreService.verifyEmailPassword(email, password);
         if (null != uid) {
+        	System.out.println("email & password verification successful, retrieving token now...");
             final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
             response.setStatus(InnerCircleResponse.Status.SUCCESS);
             response.setData(token);
         } else {
+        	System.out.println("email & password mismatch...");
             response.setStatus(InnerCircleResponse.Status.EMAIL_PASSWORD_MISMATCH);;
         }
         return response;
@@ -324,7 +326,6 @@ public class ServicesConsoleController {
         final List<String> uidList = new LinkedList<String>();
         try{
             final JSONArray uidArray = new JSONArray(otherUids);
-
             for (int i = 0; i < uidArray.length(); i++) {
                 uidList.add(uidArray.getString(i));
             }
@@ -346,7 +347,7 @@ public class ServicesConsoleController {
                 response.setStatus(InnerCircleResponse.Status.FAILED);
             }
         }
-        System.out.println("setUsername response status: " + response.getStatus().toString());
+        System.out.println("getUserAccounts response status: " + response.getStatus().toString());
         return response;
     }
 

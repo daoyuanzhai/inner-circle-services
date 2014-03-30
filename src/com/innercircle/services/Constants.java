@@ -7,7 +7,7 @@ public final class Constants {
     public final static String JSON_STRING = "jsonString";
     public final static String EMAIL = "email";
     public final static String PASSWORD = "password";
-    public final static String VIP_CODE = "VIPCode";
+    public final static String VIP_CODE = "vipCode";
 
     public final static String UID = "uid";
     public final static String THE_OTHER_UID = "theOtherUid";
