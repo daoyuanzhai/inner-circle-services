@@ -213,6 +213,23 @@
                     });
                     event.preventDefault();
                 });
+                $('#publishNewsForm').submit(function(event){
+                    var uid = $('#publishNewsUid').val();
+                    var accessToken = $('#publishNewsAccessToken').val();
+                    var newsIndex = $('#publishNewsIndex').val();
+                    var picCount = $('#publishNewsPicCount').val();
+                    var content = $('#publishNewsContent').val();
+                    $.ajax({
+                        url: $('#publishNewsForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&newsIndex=" + newsIndex + "&picCount=" + picCount + "&content=" + content,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
             });
         </script>
         <title>Web Services</title>
@@ -223,17 +240,18 @@
             <ul class="tabs">
                 <li><a href="#tab1">Register</a></li>
                 <li><a href="#tab2">Login</a></li>
-                <li><a href="#tab3">Refresh accessToken</a></li>
+                <li><a href="#tab3">Refresh token</a></li>
                 <li><a href="#tab4">Send message</a></li>
                 <li><a href="#tab5">Upload files</a></li>
                 <li><a href="#tab6">Download files</a></li>
                 <li><a href="#tab7">Set Gender</a></li>
                 <li><a href="#tab8">Set Username</a></li>
-                <li><a href="#tab9">Account(s) Info</a></li>
+                <li><a href="#tab9">Get Accounts</a></li>
                 <li><a href="#tab10">Set Following</a></li>
                 <li><a href="#tab11">Set IsBlocked</a></li>
                 <li><a href="#tab12">Get Followed</a></li>
                 <li><a href="#tab13">Get Blocked</a></li>
+                <li><a href="#tab14">Publish News</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -639,6 +657,47 @@
                                 <td>Limit Record(s):</td>
                                 <td>
                                     <input id="getBlockedLimit" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab14" class="tab">
+                    <form id="publishNewsForm" method="POST" action="/ServicesConsole/publishNews">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="publishNewsUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="publishNewsAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>News Index:</td>
+                                <td>
+                                    <input id="publishNewsIndex" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Picture Count:</td>
+                                <td>
+                                    <input id="publishNewsPicCount" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Content:</td>
+                                <td>
+                                    <input id="publishNewsContent" />
                                 </td>
                             </tr>
                             <tr>

@@ -127,6 +127,41 @@ public class ServicesConsoleController {
         return response;
     }
 
+    @RequestMapping(value = "/publishNews", method = RequestMethod.POST)
+    public @ResponseBody Object publishNews(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.NEWS_INDEX) String newsIndex,
+            @RequestParam(Constants.PIC_COUNT) String picCountString,
+            @RequestParam(Constants.CONTENT) String content,
+            ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+        final int index = Integer.valueOf(HtmlUtils.htmlUnescape(newsIndex));
+        final int picCount = Integer.valueOf(HtmlUtils.htmlUnescape(picCountString));
+        content = HtmlUtils.htmlUnescape(content);
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.NEWS_INDEX + ": " + String.valueOf(index));
+        System.out.println(Constants.PIC_COUNT + ": " + String.valueOf(picCount));
+        System.out.println(Constants.CONTENT + ": " + content);
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            try {
+                datastoreService.insertNewsContent(uid, index, picCount, content);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("publishNews response status: " + response.getStatus().toString());
+        return response;
+    }
+
     @RequestMapping(value = "/sendMessage", method = RequestMethod.POST)
     public @ResponseBody Object sendMessage(
             @RequestParam(Constants.JSON_STRING) String jsonString,
@@ -163,7 +198,7 @@ public class ServicesConsoleController {
         final InnerCircleResponse response = new InnerCircleResponse();
         final String uid = HtmlUtils.htmlUnescape(uploadForm.getUid());
         final String accessToken = HtmlUtils.htmlUnescape(uploadForm.getAccessToken());
-        final String imageUsage = HtmlUtils.htmlUnescape(uploadForm.getImageUsage());
+        final int imageUsage = Integer.valueOf(HtmlUtils.htmlUnescape(uploadForm.getImageUsage()));
         final String filename = HtmlUtils.htmlUnescape(uploadForm.getFilename());
 
         System.out.println(Constants.UID + ": " + uid);

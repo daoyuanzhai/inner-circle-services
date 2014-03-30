@@ -22,10 +22,17 @@ public final class Constants {
     public final static String LIMIT = "limit";
     public final static String OTHER_UIDS = "otherUids";
 
+    public final static String NEWS_INDEX = "newsIndex";
+    public final static String PUB_TIME = "pubTime";
+    public final static String PIC_COUNT = "picCount";
+    public final static String CONTENT = "content";
+    public final static String DELETED = "deleted";
+    public final static String COUNT = "count";
+
     public final static String IMAGE_USAGE = "imageUsage";
-    public final static String IMAGE_USAGE_FOR_TALKS = "forTalks";
-    public final static String IMAGE_USAGE_FOR_NEWS = "forNews";
-    public final static String IMAGE_USAGE_FOR_SETTINGS = "forSettings";
+    public final static int IMAGE_USAGE_FOR_SETTINGS = 1;
+    public final static int IMAGE_USAGE_FOR_TALKS = 2;
+    public final static int IMAGE_USAGE_FOR_NEWS = 3;
 
     public final static String FILE_NAME = "filename";
     public final static String ORIGINAL_FILE_NAME = "originalFilename";
@@ -36,6 +43,8 @@ public final class Constants {
     public final static String COLLECTION_NAME_USERS = "users";
     public final static String COLLECTION_NAME_TOKENS = "tokens";
     public final static String COLLECTION_NAME_RELATIONS = "relations";
+    public final static String COLLECTION_NAME_NEWS = "news";
+    public final static String COLLECTION_NAME_NEWS_COUNTERS = "news_counters";
 
     // Fields
     public final static String KEY_UID = "_id";

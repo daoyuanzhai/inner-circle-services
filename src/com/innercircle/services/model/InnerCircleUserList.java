@@ -3,7 +3,7 @@ package com.innercircle.services.model;
 import java.util.List;
 
 public class InnerCircleUserList implements InnerCircleData {
-	private String uid;
+    private String uid;
     private List<InnerCircleUser> userList;
 
     public void setUid(String uId) {
