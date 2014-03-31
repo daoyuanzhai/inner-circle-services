@@ -26,6 +26,7 @@ import org.springframework.web.util.HtmlUtils;
 
 import com.innercircle.services.data.DatastoreService;
 import com.innercircle.services.messaging.MessagingManager;
+import com.innercircle.services.model.InnerCircleCounter;
 import com.innercircle.services.model.InnerCircleFileUpload;
 import com.innercircle.services.model.InnerCircleRelationList;
 import com.innercircle.services.model.InnerCircleResponse;
@@ -96,14 +97,48 @@ public class ServicesConsoleController {
 
         final String uid = datastoreService.verifyEmailPassword(email, password);
         if (null != uid) {
-        	System.out.println("email & password verification successful, retrieving token now...");
+            System.out.println("email & password verification successful, retrieving token now...");
             final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
             response.setStatus(InnerCircleResponse.Status.SUCCESS);
             response.setData(token);
         } else {
-        	System.out.println("email & password mismatch...");
+            System.out.println("email & password mismatch...");
             response.setStatus(InnerCircleResponse.Status.EMAIL_PASSWORD_MISMATCH);;
         }
+        return response;
+    }
+
+    @RequestMapping(value = "/getCounter", method = RequestMethod.POST)
+    public @ResponseBody Object getCounter(
+            @RequestParam(Constants.UID) String uid,
+            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
+            @RequestParam(Constants.IMAGE_USAGE) String imageUsageString,
+            ModelMap model) {
+        final InnerCircleResponse response = new InnerCircleResponse();
+        uid = HtmlUtils.htmlUnescape(uid);
+        accessToken = HtmlUtils.htmlUnescape(accessToken);
+        final int imageUsage = Integer.valueOf(HtmlUtils.htmlUnescape(imageUsageString));
+
+        System.out.println(Constants.UID + ": " + uid);
+        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
+        System.out.println(Constants.IMAGE_USAGE + ": " + String.valueOf(imageUsage));
+
+        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        response.setStatus(status);
+        if (Status.SUCCESS == status) {
+            try {
+                InnerCircleCounter counter = datastoreService.getCounterByUID(uid, imageUsage);
+                if (null != counter && counter.getCount() > -1) {
+                    response.setData(counter);
+                } else {
+                    response.setStatus(InnerCircleResponse.Status.FAILED);
+                }
+            } catch (Exception e) {
+                System.out.println(e.toString());
+                response.setStatus(InnerCircleResponse.Status.FAILED);
+            }
+        }
+        System.out.println("getCounter response status: " + response.getStatus().toString());
         return response;
     }
 

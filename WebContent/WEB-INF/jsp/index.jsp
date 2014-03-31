@@ -230,6 +230,21 @@
                     });
                     event.preventDefault();
                 });
+                $('#getCounterForm').submit(function(event){
+                    var uid = $('#getCounterUid').val();
+                    var accessToken = $('#getCounterAccessToken').val();
+                    var imageUsage = $('[name="getCounterImageUsage"]').val();
+                    $.ajax({
+                        url: $('#getCounterForm').attr("action"),
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&imageUsage=" + imageUsage,
+                        type: "POST",
+                        success: function(result){
+                            console.log(JSON.stringify(result));
+                            $('#serviceResponse').html(JSON.stringify(result));
+                        }
+                    });
+                    event.preventDefault();
+                });
             });
         </script>
         <title>Web Services</title>
@@ -252,6 +267,7 @@
                 <li><a href="#tab12">Get Followed</a></li>
                 <li><a href="#tab13">Get Blocked</a></li>
                 <li><a href="#tab14">Publish News</a></li>
+                <li><a href="#tab15">Get Counter</a></li>
             </ul>
             <div class="tabcontent">
                 <div id="tab1" class="tab">
@@ -392,8 +408,8 @@
                                 <td>
                                     Usage:
                                     <select name="imageUsage">
-                                        <option value="1">For Settings</option>
-                                        <option value="2" selected>For Talks</option>
+                                        <option value="1" selected>For Settings</option>
+                                        <option value="2">For Talks</option>
                                         <option value="3">For News</option>
                                     </select>
                                 </td>
@@ -451,7 +467,7 @@
                                 Gender:
                                     <select name="setGenderGender">
                                         <option value="M" selected>Male</option>
-                                        <option value="F" selected>Female</option>
+                                        <option value="F">Female</option>
                                     </select>
                                 </td>
                             </tr>
@@ -546,7 +562,7 @@
                                 <td>
                                 Following Status:
                                     <select name="setFollowingIsFollowing">
-                                        <option value="false" selected>false</option>
+                                        <option value="false">false</option>
                                         <option value="true" selected>true</option>
                                     </select>
                                 </td>
@@ -584,7 +600,7 @@
                                 <td>
                                 Following Status:
                                     <select name="setIsBlockedIsBlocked">
-                                        <option value="false" selected>false</option>
+                                        <option value="false">false</option>
                                         <option value="true" selected>true</option>
                                     </select>
                                 </td>
@@ -698,6 +714,38 @@
                                 <td>Content:</td>
                                 <td>
                                     <input id="publishNewsContent" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="submit" value="Submit"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="tab15" class="tab">
+                    <form id="getCounterForm" method="POST" action="/ServicesConsole/getCounter">
+                        <table>
+                            <tr>
+                                <td>UID:</td>
+                                <td>
+                                    <input id="getCounterUid" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Access Token:</td>
+                                <td>
+                                    <input id="getCounterAccessToken" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                Counter Usage:
+                                    <select name="getCounterImageUsage">
+                                        <option value="2" selected>For talks</option>
+                                        <option value="3">For news</option>
+                                    </select>
                                 </td>
                             </tr>
                             <tr>

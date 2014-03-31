@@ -161,6 +161,24 @@ public class DatastoreService {
         return uid;
     }
 
+    public InnerCircleCounter getCounterByUID(final String uid, final int imageUsage) throws IOException {
+        final Criteria criteria = Criteria.where(Constants.UID).is(uid);
+        final Query query = new Query(criteria);
+        MongoTemplate mongoTemp;
+        switch (imageUsage) {
+        case Constants.IMAGE_USAGE_FOR_TALKS:
+            mongoTemp = mongoTemplateTalks;
+            break;
+        case Constants.IMAGE_USAGE_FOR_NEWS:
+            mongoTemp = mongoTemplateNews;
+            break;
+        default:
+            throw new IOException("Invalid image usage type");
+        }
+        return (InnerCircleCounter) mongoTemp
+                .findOne(query, InnerCircleCounter.class, Constants.COLLECTION_NAME_NEWS_COUNTERS);
+    }
+
     public void setFollowingRelation(final String uid, final String theOtherUid, final boolean isFollowing) {
         createCollectionByClass(InnerCircleRelation.class);
 
