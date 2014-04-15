@@ -233,10 +233,10 @@
                 $('#getCounterForm').submit(function(event){
                     var uid = $('#getCounterUid').val();
                     var accessToken = $('#getCounterAccessToken').val();
-                    var imageUsage = $('[name="getCounterImageUsage"]').val();
+                    var receiverUid = $('#getCounterReceiverUid').val();
                     $.ajax({
                         url: $('#getCounterForm').attr("action"),
-                        data: "uid=" + uid + "&accessToken=" + accessToken + "&imageUsage=" + imageUsage,
+                        data: "uid=" + uid + "&accessToken=" + accessToken + "&receiverUid=" + receiverUid,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
@@ -740,12 +740,9 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td>Receiver UID:</td>
                                 <td>
-                                Counter Usage:
-                                    <select name="getCounterImageUsage">
-                                        <option value="2" selected>For talks</option>
-                                        <option value="3">For news</option>
-                                    </select>
+                                    <input id="getCounterReceiverUid" />
                                 </td>
                             </tr>
                             <tr>

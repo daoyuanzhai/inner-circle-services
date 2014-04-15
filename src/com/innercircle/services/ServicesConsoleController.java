@@ -112,22 +112,22 @@ public class ServicesConsoleController {
     public @ResponseBody Object getCounter(
             @RequestParam(Constants.UID) String uid,
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
-            @RequestParam(Constants.IMAGE_USAGE) String imageUsageString,
+            @RequestParam(Constants.RECEIVER_UID) String receiverUid,
             ModelMap model) {
         final InnerCircleResponse response = new InnerCircleResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
-        final int imageUsage = Integer.valueOf(HtmlUtils.htmlUnescape(imageUsageString));
+        receiverUid = HtmlUtils.htmlUnescape(receiverUid);
 
         System.out.println(Constants.UID + ": " + uid);
         System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
-        System.out.println(Constants.IMAGE_USAGE + ": " + String.valueOf(imageUsage));
+        System.out.println(Constants.RECEIVER_UID + ": " + receiverUid);
 
         InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         response.setStatus(status);
         if (Status.SUCCESS == status) {
             try {
-                InnerCircleCounter counter = datastoreService.getCounterByUID(uid, imageUsage);
+                InnerCircleCounter counter = datastoreService.getCounterByUID(uid, receiverUid);
                 if (null != counter && counter.getCount() > -1) {
                     response.setData(counter);
                 } else {
