@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import com.innercircle.services.Constants;
 
 @Document
-public class InnerCircleRelation implements InnerCircleData {
+public class InnerCircleRelation implements ResponseData {
     private String uid;
     private String theOtherUid;
     private boolean isFollowing;

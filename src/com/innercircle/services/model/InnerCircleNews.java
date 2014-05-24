@@ -3,7 +3,7 @@ package com.innercircle.services.model;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class InnerCircleNews implements InnerCircleData {
+public class InnerCircleNews implements ResponseData {
     private String uid;
     private int newsIndex;
     private long pubTime;

@@ -1,17 +1,16 @@
 package com.innercircle.services.model;
 
-public class InnerCircleResponse {
+public class CarPoolCallResponse {
     public enum Status {
         SUCCESS,
         FAILED,
-        EMAIL_EXISTS_ERROR,
-        EMAIL_PASSWORD_MISMATCH,
-        TOKEN_EXPIRE_ERROR,
-        TOKEN_MISMATCH
+        ERROR_IN_USE,
+        ERROR_MISMATCH,
+        ERROR_EXPIRED
     }
 
     private Status status;
-    private InnerCircleData data;
+    private ResponseData data;
 
     public void setStatus(final Status status) {
         this.status = status;
@@ -21,11 +20,11 @@ public class InnerCircleResponse {
         return this.status;
     }
 
-    public void setData(final InnerCircleData data) {
+    public void setData(final ResponseData data) {
         this.data = data;
     }
 
-    public InnerCircleData getData() {
+    public ResponseData getData() {
         return this.data;
     }
 }

@@ -40,7 +40,7 @@ public final class Constants {
     public final static String USERNAME = "username";
 
     // Collections
-    public final static String COLLECTION_NAME_USERS = "users";
+    public final static String COLLECTION_NAME_RIDERS = "riders";
     public final static String COLLECTION_NAME_TOKENS = "tokens";
     public final static String COLLECTION_NAME_RELATIONS = "relations";
     public final static String COLLECTION_NAME_NEWS = "news";

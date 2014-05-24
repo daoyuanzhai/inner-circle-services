@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class InnerCircleToken implements InnerCircleData {
+public class RiderToken implements ResponseData {
     @Id
     private String uid;
     private String accessToken;

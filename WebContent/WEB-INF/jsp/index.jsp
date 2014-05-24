@@ -27,10 +27,9 @@
                 $('#registerForm').submit(function(event){
                     var email = $('#email').val();
                     var password = $('#password').val();
-                    var vipCode = $('#vipCode').val();
                     $.ajax({
                         url: $('#registerForm').attr("action"),
-                        data: "email=" + email + "&password=" + password + "&vipCode=" + vipCode,
+                        data: "email=" + email + "&password=" + password,
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));
@@ -283,12 +282,6 @@
                                 <td>Password</td>
                                 <td>
                                     <input id="password" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>VIP Code</td>
-                                <td>
-                                    <input id="vipCode" />
                                 </td>
                             </tr>
                             <tr>

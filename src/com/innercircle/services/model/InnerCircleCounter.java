@@ -3,7 +3,7 @@ package com.innercircle.services.model;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class InnerCircleCounter implements InnerCircleData {
+public class InnerCircleCounter implements ResponseData {
     private String uid;
     private String receiverUid;
     private int count;

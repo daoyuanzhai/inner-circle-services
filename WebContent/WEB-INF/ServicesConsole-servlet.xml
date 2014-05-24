@@ -32,37 +32,25 @@
 
     <!-- Factory bean that creates the Mongo instance for MAIN database-->
     <bean id="mongo" class="org.springframework.data.mongodb.core.MongoFactoryBean">
-        <property name="host" value="ds033709.mongolab.com" />
-        <property name="port" value="33709" />
+        <property name="host" value="ds049878.mongolab.com" />
+        <property name="port" value="49878" />
     </bean>
 
     <!-- Factory bean that creates the Mongo instance for TALKS database-->
-    <bean id="mongoTalks" class="org.springframework.data.mongodb.core.MongoFactoryBean">
-        <property name="host" value="ds045907.mongolab.com" />
-        <property name="port" value="45907" />
-    </bean>
-
-    <!-- Factory bean that creates the Mongo instance for NEWS database-->
-    <bean id="mongoNews" class="org.springframework.data.mongodb.core.MongoFactoryBean">
-        <property name="host" value="ds045907.mongolab.com" />
-        <property name="port" value="45907" />
+    <bean id="mongoChats" class="org.springframework.data.mongodb.core.MongoFactoryBean">
+        <property name="host" value="ds051368.mongolab.com" />
+        <property name="port" value="51368" />
     </bean>
 
     <bean id="mongoDbFactory" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
         <constructor-arg name="mongo" ref="mongo" />
-        <constructor-arg name="databaseName" value="inner_circle" />
+        <constructor-arg name="databaseName" value="car_pool" />
         <constructor-arg type="org.springframework.data.authentication.UserCredentials" ref="userCredentials"/>
     </bean>
 
-    <bean id="mongoDbFactoryTalks" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
-        <constructor-arg name="mongo" ref="mongoTalks" />
-        <constructor-arg name="databaseName" value="inner_circle_talks" />
-        <constructor-arg type="org.springframework.data.authentication.UserCredentials" ref="userCredentials"/>
-    </bean>
-
-    <bean id="mongoDbFactoryNews" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
-        <constructor-arg name="mongo" ref="mongoNews" />
-        <constructor-arg name="databaseName" value="inner_circle_news" />
+    <bean id="mongoDbFactoryChats" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
+        <constructor-arg name="mongo" ref="mongoChats" />
+        <constructor-arg name="databaseName" value="car_pool_chats" />
         <constructor-arg type="org.springframework.data.authentication.UserCredentials" ref="userCredentials"/>
     </bean>
 
@@ -72,34 +60,22 @@
         <constructor-arg ref="converter" />
     </bean>
 
-    <bean name="gridFsTemplateTalks" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
-        <constructor-arg ref="mongoDbFactoryTalks" />
-        <constructor-arg ref="converter" />
-    </bean>
-
-    <bean name="gridFsTemplateNews" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
-        <constructor-arg ref="mongoDbFactoryNews" />
+    <bean name="gridFsTemplateChats" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
+        <constructor-arg ref="mongoDbFactoryChats" />
         <constructor-arg ref="converter" />
     </bean>
 
     <!-- MongoTemplate for connecting and quering the documents in the MAIN database -->
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongo" ref="mongo" />
-        <constructor-arg name="databaseName" value="inner_circle" />
+        <constructor-arg name="databaseName" value="car_pool" />
         <constructor-arg name="userCredentials" ref="userCredentials"/>
     </bean>
 
     <!-- MongoTemplate for connecting and quering the documents in the Talks database -->
-    <bean id="mongoTemplateTalks" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg name="mongo" ref="mongoTalks" />
-        <constructor-arg name="databaseName" value="inner_circle_talks" />
-        <constructor-arg name="userCredentials" ref="userCredentials"/>
-    </bean>
-
-    <!-- MongoTemplate for connecting and quering the documents in the Talks database -->
-    <bean id="mongoTemplateNews" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg name="mongo" ref="mongoNews" />
-        <constructor-arg name="databaseName" value="inner_circle_news" />
+    <bean id="mongoTemplateChats" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongo" ref="mongoChats" />
+        <constructor-arg name="databaseName" value="car_pool_chats" />
         <constructor-arg name="userCredentials" ref="userCredentials"/>
     </bean>
 

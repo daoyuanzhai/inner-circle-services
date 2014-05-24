@@ -26,12 +26,11 @@ import org.springframework.web.util.HtmlUtils;
 
 import com.innercircle.services.data.DatastoreService;
 import com.innercircle.services.messaging.MessagingManager;
-import com.innercircle.services.model.InnerCircleCounter;
 import com.innercircle.services.model.InnerCircleFileUpload;
 import com.innercircle.services.model.InnerCircleRelationList;
-import com.innercircle.services.model.InnerCircleResponse;
-import com.innercircle.services.model.InnerCircleResponse.Status;
-import com.innercircle.services.model.InnerCircleToken;
+import com.innercircle.services.model.CarPoolCallResponse;
+import com.innercircle.services.model.CarPoolCallResponse.Status;
+import com.innercircle.services.model.RiderToken;
 import com.innercircle.services.model.InnerCircleUser;
 import com.innercircle.services.model.InnerCircleUserList;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -60,25 +59,20 @@ public class ServicesConsoleController {
     public @ResponseBody Object register(
             @RequestParam(Constants.EMAIL) String email,
             @RequestParam(Constants.PASSWORD) String password,
-            @RequestParam(Constants.VIP_CODE) String VIPCode,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
 
         email = HtmlUtils.htmlUnescape(email);
         password = HtmlUtils.htmlUnescape(password);
-        VIPCode = HtmlUtils.htmlUnescape(VIPCode);
 
         System.out.println(Constants.EMAIL + ": " + email);
         System.out.println(Constants.PASSWORD + ": " + password);
-        System.out.println(Constants.VIP_CODE + ": " + VIPCode);
 
-        final String uid = datastoreService.addUser(email, password, VIPCode);
+        final String uid = datastoreService.addRider(email, password);
         if (null != uid) {
-            final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
-            response.setStatus(InnerCircleResponse.Status.SUCCESS);
-            response.setData(token);
+            response.setStatus(CarPoolCallResponse.Status.SUCCESS);
         } else {
-            response.setStatus(InnerCircleResponse.Status.EMAIL_EXISTS_ERROR);
+            response.setStatus(CarPoolCallResponse.Status.ERROR_IN_USE);
         }
         return response;
     }
@@ -88,7 +82,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.EMAIL) String email,
             @RequestParam(Constants.PASSWORD) String password,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         email = HtmlUtils.htmlUnescape(email);
         password = HtmlUtils.htmlUnescape(password);
 
@@ -98,16 +92,17 @@ public class ServicesConsoleController {
         final String uid = datastoreService.verifyEmailPassword(email, password);
         if (null != uid) {
             System.out.println("email & password verification successful, retrieving token now...");
-            final InnerCircleToken token = datastoreService.addOrUpdateToken(uid);
-            response.setStatus(InnerCircleResponse.Status.SUCCESS);
+            final RiderToken token = datastoreService.addOrUpdateToken(uid);
+            response.setStatus(CarPoolCallResponse.Status.SUCCESS);
             response.setData(token);
         } else {
             System.out.println("email & password mismatch...");
-            response.setStatus(InnerCircleResponse.Status.EMAIL_PASSWORD_MISMATCH);;
+            response.setStatus(CarPoolCallResponse.Status.ERROR_MISMATCH);;
         }
         return response;
     }
 
+    /*
     @RequestMapping(value = "/getCounter", method = RequestMethod.POST)
     public @ResponseBody Object getCounter(
             @RequestParam(Constants.UID) String uid,
@@ -141,61 +136,27 @@ public class ServicesConsoleController {
         System.out.println("getCounter response status: " + response.getStatus().toString());
         return response;
     }
+    */
 
     @RequestMapping(value = "/refreshAccessToken", method = RequestMethod.POST)
     public @ResponseBody Object refreshAccessToken(
             @RequestParam(Constants.UID) String uid,
             @RequestParam(Constants.REFRESH_TOKEN) String refreshToken,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         refreshToken = HtmlUtils.htmlUnescape(refreshToken);
 
         System.out.println(Constants.UID + ": " + uid);
         System.out.println(Constants.REFRESH_TOKEN + ": " + refreshToken);
 
-        final InnerCircleToken token = datastoreService.updateAccessToken(uid, refreshToken);
+        final RiderToken token = datastoreService.updateAccessToken(uid, refreshToken);
         if (null != token) {
             response.setStatus(Status.SUCCESS);
             response.setData(token);
         } else {
-            response.setStatus(Status.TOKEN_MISMATCH);
+            response.setStatus(Status.ERROR_MISMATCH);
         }
-        return response;
-    }
-
-    @RequestMapping(value = "/publishNews", method = RequestMethod.POST)
-    public @ResponseBody Object publishNews(
-            @RequestParam(Constants.UID) String uid,
-            @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
-            @RequestParam(Constants.NEWS_INDEX) String newsIndex,
-            @RequestParam(Constants.PIC_COUNT) String picCountString,
-            @RequestParam(Constants.CONTENT) String content,
-            ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
-        uid = HtmlUtils.htmlUnescape(uid);
-        accessToken = HtmlUtils.htmlUnescape(accessToken);
-        final int index = Integer.valueOf(HtmlUtils.htmlUnescape(newsIndex));
-        final int picCount = Integer.valueOf(HtmlUtils.htmlUnescape(picCountString));
-        content = HtmlUtils.htmlUnescape(content);
-
-        System.out.println(Constants.UID + ": " + uid);
-        System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
-        System.out.println(Constants.NEWS_INDEX + ": " + String.valueOf(index));
-        System.out.println(Constants.PIC_COUNT + ": " + String.valueOf(picCount));
-        System.out.println(Constants.CONTENT + ": " + content);
-
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
-        response.setStatus(status);
-        if (Status.SUCCESS == status) {
-            try {
-                datastoreService.insertNewsContent(uid, index, picCount, content);
-            } catch (Exception e) {
-                System.out.println(e.toString());
-                response.setStatus(InnerCircleResponse.Status.FAILED);
-            }
-        }
-        System.out.println("publishNews response status: " + response.getStatus().toString());
         return response;
     }
 
@@ -203,7 +164,7 @@ public class ServicesConsoleController {
     public @ResponseBody Object sendMessage(
             @RequestParam(Constants.JSON_STRING) String jsonString,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         System.out.println(jsonString);
         try {
             final JSONObject registerJsonObject = new JSONObject(jsonString);
@@ -217,22 +178,22 @@ public class ServicesConsoleController {
             System.out.println(Constants.RECEIVER_UID + ": " + receiverUid);
             System.out.println(Constants.MESSAGE + ": " + message);
 
-            final InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+            final CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
             response.setStatus(status);
-            if (InnerCircleResponse.Status.SUCCESS == status) {
+            if (CarPoolCallResponse.Status.SUCCESS == status) {
                 messagingManager.sendMessage(receiverUid, message);
             }
             return response;
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(InnerCircleResponse.Status.FAILED);;
+            response.setStatus(CarPoolCallResponse.Status.FAILED);;
             return response;
         }
     }
 
     @RequestMapping(value = "/fileUpload", method = RequestMethod.POST)
     public @ResponseBody Object fileUpload(@ModelAttribute("uploadForm") InnerCircleFileUpload uploadForm, Model map) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         final String uid = HtmlUtils.htmlUnescape(uploadForm.getUid());
         final String accessToken = HtmlUtils.htmlUnescape(uploadForm.getAccessToken());
         final int imageUsage = Integer.valueOf(HtmlUtils.htmlUnescape(uploadForm.getImageUsage()));
@@ -243,9 +204,9 @@ public class ServicesConsoleController {
         System.out.println(Constants.IMAGE_USAGE + ": " + imageUsage);
         System.out.println(Constants.FILE_NAME + ": " + filename);
 
-        final InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        final CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         response.setStatus(status);
-        if (status == InnerCircleResponse.Status.SUCCESS) {
+        if (status == CarPoolCallResponse.Status.SUCCESS) {
             MultipartFile file = uploadForm.getFile();
             try {
                 datastoreService.saveFile(file, filename, imageUsage);
@@ -293,7 +254,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
             @RequestParam(Constants.GENDER) char gender,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -301,14 +262,14 @@ public class ServicesConsoleController {
         System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
         System.out.println(Constants.GENDER + ": " + gender);
 
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         response.setStatus(status);
         if (Status.SUCCESS == status) {
             final InnerCircleUser user = datastoreService.updateGender(uid, gender);
             if (null != user) {
                 response.setData(user);
             } else {
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("setGender response status: " + response.getStatus().toString());
@@ -321,7 +282,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
             @RequestParam(Constants.USERNAME) String username,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -329,14 +290,14 @@ public class ServicesConsoleController {
         System.out.println(Constants.ACCESS_TOKEN + ": " + accessToken);
         System.out.println(Constants.USERNAME + ": " + username);
 
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         response.setStatus(status);
         if (Status.SUCCESS == status) {
             final InnerCircleUser user = datastoreService.updateUsername(uid, username);
             if (null != user) {
                 response.setData(user);
             } else {
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("setUsername response status: " + response.getStatus().toString());
@@ -349,7 +310,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.ACCESS_TOKEN) String accessToken,
             @RequestParam(Constants.OTHER_UIDS) String otherUids,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
         otherUids = HtmlUtils.htmlUnescape(otherUids);
@@ -365,10 +326,10 @@ public class ServicesConsoleController {
                 uidList.add(uidArray.getString(i));
             }
         } catch (JSONException e) {
-            response.setStatus(InnerCircleResponse.Status.FAILED);
+            response.setStatus(CarPoolCallResponse.Status.FAILED);
             return response;
         }
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         System.out.println("uid and accessToken verification result: " + status.toString());
         response.setStatus(status);
         if (Status.SUCCESS == status) {
@@ -379,7 +340,7 @@ public class ServicesConsoleController {
                 userList.setUserList(users);
                 response.setData(userList);
             } else {
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("getUserAccounts response status: " + response.getStatus().toString());
@@ -393,7 +354,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.THE_OTHER_UID) String theOtherUid,
             @RequestParam(Constants.IS_FOLLOWING) String isFollowingString,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
         theOtherUid = HtmlUtils.htmlUnescape(theOtherUid);
@@ -404,7 +365,7 @@ public class ServicesConsoleController {
         System.out.println(Constants.THE_OTHER_UID + ": " + theOtherUid);
         System.out.println(Constants.IS_FOLLOWING + ": " + String.valueOf(isFollowing));
 
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         System.out.println("uid and accessToken verification result: " + status.toString());
         response.setStatus(status);
         if (Status.SUCCESS == status) {
@@ -412,7 +373,7 @@ public class ServicesConsoleController {
                 datastoreService.setFollowingRelation(uid, theOtherUid, isFollowing);
             } catch (Exception e) {
                 System.out.println(e.toString());
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("setFollowing response status: " + response.getStatus().toString());
@@ -426,7 +387,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.SKIP) int skip,
             @RequestParam(Constants.LIMIT) int limit,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -435,7 +396,7 @@ public class ServicesConsoleController {
         System.out.println(Constants.SKIP + ": " + String.valueOf(skip));
         System.out.println(Constants.LIMIT + ": " + String.valueOf(limit));
 
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         System.out.println("uid and accessToken verification result: " + status.toString());
         response.setStatus(status);
         if (Status.SUCCESS == status) {
@@ -444,7 +405,7 @@ public class ServicesConsoleController {
                 response.setData(followedList);
             } catch (Exception e) {
                 System.out.println(e.toString());
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("getFollowed response status: " + response.getStatus().toString());
@@ -458,7 +419,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.THE_OTHER_UID) String theOtherUid,
             @RequestParam(Constants.IS_BLOCKED) String isBlockedString,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
         theOtherUid = HtmlUtils.htmlUnescape(theOtherUid);
@@ -469,7 +430,7 @@ public class ServicesConsoleController {
         System.out.println(Constants.THE_OTHER_UID + ": " + theOtherUid);
         System.out.println(Constants.IS_FOLLOWING + ": " + String.valueOf(isBlocked));
 
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         System.out.println("uid and accessToken verification result: " + status.toString());
         response.setStatus(status);
         if (Status.SUCCESS == status) {
@@ -477,7 +438,7 @@ public class ServicesConsoleController {
                 datastoreService.setIsBlockedRelation(uid, theOtherUid, isBlocked);
             } catch (Exception e) {
                 System.out.println(e.toString());
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("setIsBlocked response status: " + response.getStatus().toString());
@@ -491,7 +452,7 @@ public class ServicesConsoleController {
             @RequestParam(Constants.SKIP) int skip,
             @RequestParam(Constants.LIMIT) int limit,
             ModelMap model) {
-        final InnerCircleResponse response = new InnerCircleResponse();
+        final CarPoolCallResponse response = new CarPoolCallResponse();
         uid = HtmlUtils.htmlUnescape(uid);
         accessToken = HtmlUtils.htmlUnescape(accessToken);
 
@@ -500,7 +461,7 @@ public class ServicesConsoleController {
         System.out.println(Constants.SKIP + ": " + String.valueOf(skip));
         System.out.println(Constants.LIMIT + ": " + String.valueOf(limit));
 
-        InnerCircleResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
+        CarPoolCallResponse.Status status = datastoreService.verifyUidAccessToken(uid, accessToken);
         System.out.println("uid and accessToken verification result: " + status.toString());
         response.setStatus(status);
         if (Status.SUCCESS == status) {
@@ -509,7 +470,7 @@ public class ServicesConsoleController {
                 response.setData(blockedList);
             } catch (Exception e) {
                 System.out.println(e.toString());
-                response.setStatus(InnerCircleResponse.Status.FAILED);
+                response.setStatus(CarPoolCallResponse.Status.FAILED);
             }
         }
         System.out.println("getFollowed response status: " + response.getStatus().toString());

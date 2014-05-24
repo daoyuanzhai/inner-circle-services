@@ -2,7 +2,7 @@ package com.innercircle.services.model;
 
 import java.util.List;
 
-public class InnerCircleUserList implements InnerCircleData {
+public class InnerCircleUserList implements ResponseData {
     private String uid;
     private List<InnerCircleUser> userList;
 
