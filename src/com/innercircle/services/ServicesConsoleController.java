@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,13 +27,13 @@ import org.springframework.web.util.HtmlUtils;
 
 import com.innercircle.services.data.DatastoreService;
 import com.innercircle.services.messaging.MessagingManager;
-import com.innercircle.services.model.InnerCircleFileUpload;
-import com.innercircle.services.model.InnerCircleRelationList;
 import com.innercircle.services.model.CarPoolCallResponse;
 import com.innercircle.services.model.CarPoolCallResponse.Status;
-import com.innercircle.services.model.RiderToken;
+import com.innercircle.services.model.InnerCircleFileUpload;
+import com.innercircle.services.model.InnerCircleRelationList;
 import com.innercircle.services.model.InnerCircleUser;
 import com.innercircle.services.model.InnerCircleUserList;
+import com.innercircle.services.model.RiderToken;
 import com.mongodb.gridfs.GridFSDBFile;
 
 @Controller
@@ -59,6 +60,8 @@ public class ServicesConsoleController {
     public @ResponseBody Object register(
             @RequestParam(Constants.EMAIL) String email,
             @RequestParam(Constants.PASSWORD) String password,
+            @RequestHeader(Constants.CAR_POOL_CALL_ID) long callId,
+            HttpServletResponse servletResponse,
             ModelMap model) {
         final CarPoolCallResponse response = new CarPoolCallResponse();
 
@@ -74,6 +77,7 @@ public class ServicesConsoleController {
         } else {
             response.setStatus(CarPoolCallResponse.Status.ERROR_IN_USE);
         }
+        servletResponse.setHeader(Constants.CAR_POOL_CALL_ID, String.valueOf(callId));
         return response;
     }
 
@@ -81,6 +85,8 @@ public class ServicesConsoleController {
     public @ResponseBody Object login(
             @RequestParam(Constants.EMAIL) String email,
             @RequestParam(Constants.PASSWORD) String password,
+            @RequestHeader(Constants.CAR_POOL_CALL_ID) long callId,
+            HttpServletResponse servletResponse,
             ModelMap model) {
         final CarPoolCallResponse response = new CarPoolCallResponse();
         email = HtmlUtils.htmlUnescape(email);
@@ -99,6 +105,7 @@ public class ServicesConsoleController {
             System.out.println("email & password mismatch...");
             response.setStatus(CarPoolCallResponse.Status.ERROR_MISMATCH);;
         }
+        servletResponse.setHeader(Constants.CAR_POOL_CALL_ID, String.valueOf(callId));
         return response;
     }
 

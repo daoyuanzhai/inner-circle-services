@@ -29,6 +29,7 @@
                     var password = $('#password').val();
                     $.ajax({
                         url: $('#registerForm').attr("action"),
+                        headers: {'carPoolCallId': Math.floor(Math.random() * 1000000)},
                         data: "email=" + email + "&password=" + password,
                         type: "POST",
                         success: function(result){
@@ -44,6 +45,7 @@
                     $.ajax({
                         url: $('#loginForm').attr("action"),
                         data: "email=" + email + "&password=" + password,
+                        headers: {'carPoolCallId': Math.floor(Math.random() * 1000000)},
                         type: "POST",
                         success: function(result){
                             console.log(JSON.stringify(result));

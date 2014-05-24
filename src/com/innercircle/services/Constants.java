@@ -3,6 +3,9 @@ package com.innercircle.services;
 public final class Constants {
     private Constants() {}
 
+    // Http Headers
+    public final static String CAR_POOL_CALL_ID = "carPoolCallId";
+
     // Http Parameters
     public final static String JSON_STRING = "jsonString";
     public final static String EMAIL = "email";
